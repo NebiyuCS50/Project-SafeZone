@@ -1,23 +1,14 @@
-import React from "react";
+import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AuthListener from "./App";
-import LandingPage from "@/pages/LandingPage";
-import LoginPage from "@/pages/Login/page";
-import "./index.css"; // if you have one
+import { createBrowserRouter, RouterProvider } from "react-router";
+import routes from "./routes/routes.jsx";
+import "./index.css";
 
+const router = createBrowserRouter(routes);
 const root = createRoot(document.getElementById("root"));
 
 root.render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <AuthListener>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          {/* add other routes here */}
-        </Routes>
-      </AuthListener>
-    </BrowserRouter>
-  </React.StrictMode>
+  <StrictMode>
+    <RouterProvider router={router} />
+  </StrictMode>
 );
