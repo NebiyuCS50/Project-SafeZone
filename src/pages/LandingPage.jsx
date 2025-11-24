@@ -35,8 +35,11 @@ import {
   MapPin,
   Star,
   ArrowRight,
+  Mail,
+  Phone,
+  MessageSquare,
 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [isSignedIn, setIsSignedIn] = useState(false);
@@ -47,42 +50,50 @@ export default function Home() {
   const [signInEmail, setSignInEmail] = useState("");
   const [signInPassword, setSignInPassword] = useState("");
 
+  const { toast } = useToast();
+
   const features = [
     {
       icon: Users,
       title: "Community Powered",
       description:
         "Join thousands of Addis Ababa residents working together to keep our city safe.",
+      color: "text-blue-600",
     },
     {
       icon: Shield,
       title: "AI Verification",
       description:
         "Advanced AI technology ensures all reports are authentic and reliable.",
+      color: "text-purple-600",
     },
     {
       icon: Eye,
       title: "Real-time Updates",
       description:
         "Get instant notifications about verified incidents in your area.",
+      color: "text-green-600",
     },
     {
       icon: TrendingUp,
       title: "Data Analytics",
       description:
         "Comprehensive insights and trends to improve city safety planning.",
+      color: "text-orange-600",
     },
     {
       icon: AlertTriangle,
       title: "Emergency Response",
       description:
         "Quick coordination with local authorities for faster response times.",
+      color: "text-red-600",
     },
     {
       icon: CheckCircle,
       title: "Verified Reports",
       description:
-        "Only authenticated and verified incidents are shared with the community.",
+        "Only authenticated and verified incidents are shared with community.",
+      color: "text-teal-600",
     },
   ];
 
@@ -93,6 +104,7 @@ export default function Home() {
       content:
         "SafeZone has transformed how we report and respond to incidents in our neighborhood. I feel much safer knowing help is just a tap away.",
       rating: 5,
+      avatar: "AK",
     },
     {
       name: "Dawit Haile",
@@ -100,6 +112,7 @@ export default function Home() {
       content:
         "The real-time updates help me plan my deliveries better and avoid traffic incidents. Essential for my business operations.",
       rating: 5,
+      avatar: "DH",
     },
     {
       name: "Sara Tadesse",
@@ -107,6 +120,7 @@ export default function Home() {
       content:
         "As a student who travels daily, SafeZone gives me peace of mind knowing I can check for safety incidents along my route.",
       rating: 5,
+      avatar: "ST",
     },
   ];
 
@@ -159,11 +173,13 @@ export default function Home() {
             <div className="flex items-center space-x-2">
               <Shield className="w-8 h-8 text-blue-600" />
               <h1 className="text-2xl font-bold text-gray-900">SafeZone</h1>
-              <Badge variant="secondary">Addis Ababa</Badge>
+              <Badge variant="secondary" className="hidden sm:inline-flex">
+                Addis Ababa
+              </Badge>
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-6">
+            <nav className="hidden md:flex items-center space-x-6">
               <Button
                 variant="ghost"
                 onClick={() =>
@@ -226,7 +242,7 @@ export default function Home() {
                       Sign In
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                       <DialogTitle>Sign In to SafeZone</DialogTitle>
                       <DialogDescription>
@@ -234,7 +250,7 @@ export default function Home() {
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
                         <Input
                           id="email"
@@ -244,7 +260,7 @@ export default function Home() {
                           onChange={(e) => setSignInEmail(e.target.value)}
                         />
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="password">Password</Label>
                         <Input
                           id="password"
@@ -267,7 +283,7 @@ export default function Home() {
                   </DialogContent>
                 </Dialog>
               )}
-            </div>
+            </nav>
 
             {/* Mobile Menu Button */}
             <Button
@@ -286,7 +302,7 @@ export default function Home() {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="md:hidden mt-4 pt-4 border-t">
+            <nav className="md:hidden mt-4 pt-4 border-t">
               <div className="flex flex-col space-y-3">
                 <Button
                   variant="ghost"
@@ -329,7 +345,7 @@ export default function Home() {
                   Contact
                 </Button>
                 {isSignedIn ? (
-                  <div className="flex flex-col space-y-3">
+                  <div className="flex flex-col space-y-3 pt-3 border-t">
                     <Badge
                       variant="outline"
                       className="flex items-center justify-center"
@@ -349,7 +365,7 @@ export default function Home() {
                   </Button>
                 )}
               </div>
-            </div>
+            </nav>
           )}
         </div>
       </header>
@@ -357,13 +373,14 @@ export default function Home() {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
-          <Badge className="mb-4 bg-blue-100 text-blue-800">
+          <Badge className="mb-6 bg-blue-100 text-blue-800 hover:bg-blue-200">
             🇪🇹 Made for Addis Ababa
           </Badge>
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
-            Making Addis Ababa Safer Together
+          <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            Making Addis Ababa
+            <span className="text-blue-600"> Safer Together</span>
           </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
             Join thousands of residents in creating a safer community through
             real-time incident reporting, AI verification, and coordinated
             emergency response.
@@ -371,7 +388,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
-              className="text-lg px-8"
+              className="text-lg px-8 py-3"
               onClick={() => setShowSignInDialog(true)}
             >
               <User className="w-5 h-5 mr-2" />
@@ -380,7 +397,7 @@ export default function Home() {
             <Button
               size="lg"
               variant="outline"
-              className="text-lg px-8"
+              className="text-lg px-8 py-3"
               onClick={() =>
                 document
                   .getElementById("features")
@@ -395,31 +412,45 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 bg-white">
+      <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card>
-              <CardContent className="p-6 text-center">
-                <div className="text-3xl font-bold text-blue-600">2,847</div>
-                <div className="text-gray-600">Total Reports</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <Card className="text-center border-0 shadow-sm">
+              <CardContent className="p-6">
+                <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
+                  2,847
+                </div>
+                <div className="text-gray-600 font-medium">Total Reports</div>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="p-6 text-center">
-                <div className="text-3xl font-bold text-green-600">89%</div>
-                <div className="text-gray-600">Verified Reports</div>
+            <Card className="text-center border-0 shadow-sm">
+              <CardContent className="p-6">
+                <div className="text-3xl md:text-4xl font-bold text-green-600 mb-2">
+                  89%
+                </div>
+                <div className="text-gray-600 font-medium">
+                  Verified Reports
+                </div>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="p-6 text-center">
-                <div className="text-3xl font-bold text-purple-600">15min</div>
-                <div className="text-gray-600">Avg. Response Time</div>
+            <Card className="text-center border-0 shadow-sm">
+              <CardContent className="p-6">
+                <div className="text-3xl md:text-4xl font-bold text-purple-600 mb-2">
+                  15min
+                </div>
+                <div className="text-gray-600 font-medium">
+                  Avg. Response Time
+                </div>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="p-6 text-center">
-                <div className="text-3xl font-bold text-orange-600">24/7</div>
-                <div className="text-gray-600">Active Monitoring</div>
+            <Card className="text-center border-0 shadow-sm">
+              <CardContent className="p-6">
+                <div className="text-3xl md:text-4xl font-bold text-orange-600 mb-2">
+                  24/7
+                </div>
+                <div className="text-gray-600 font-medium">
+                  Active Monitoring
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -427,25 +458,35 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16" id="features">
+      <section className="py-20" id="features">
         <div className="container mx-auto px-4">
-          <h3 className="text-3xl font-bold text-center mb-12">
-            Why Choose SafeZone?
-          </h3>
+          <div className="text-center mb-16">
+            <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Why Choose SafeZone?
+            </h3>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Discover the features that make SafeZone the most trusted safety
+              platform in Addis Ababa
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="text-center hover:shadow-lg transition-shadow"
+                className="group hover:shadow-lg transition-all duration-300 border-0 shadow-sm"
               >
-                <CardContent className="p-6">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <feature.icon className="w-8 h-8 text-blue-600" />
+                <CardContent className="p-8 text-center">
+                  <div
+                    className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 ${feature.color} bg-opacity-10 group-hover:scale-110 transition-transform duration-300`}
+                  >
+                    <feature.icon className={`w-8 h-8 ${feature.color}`} />
                   </div>
-                  <h4 className="text-xl font-semibold mb-2">
+                  <h4 className="text-xl font-semibold mb-3 text-gray-900">
                     {feature.title}
                   </h4>
-                  <p className="text-gray-600">{feature.description}</p>
+                  <p className="text-gray-600 leading-relaxed">
+                    {feature.description}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -454,74 +495,88 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-16 bg-white" id="how-it-works">
+      <section className="py-20 bg-white" id="how-it-works">
         <div className="container mx-auto px-4">
-          <h3 className="text-3xl font-bold text-center mb-12">
-            How SafeZone Works
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-                1
+          <div className="text-center mb-16">
+            <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              How SafeZone Works
+            </h3>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Get started in four simple steps and start making a difference in
+              your community
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                step: 1,
+                title: "Sign Up",
+                description: "Create your account and join SafeZone community",
+              },
+              {
+                step: 2,
+                title: "Report Incidents",
+                description: "Share safety concerns with photos and details",
+              },
+              {
+                step: 3,
+                title: "AI Verification",
+                description:
+                  "Our AI ensures reports are authentic and reliable",
+              },
+              {
+                step: 4,
+                title: "Stay Informed",
+                description: "Get real-time updates and safety alerts",
+              },
+            ].map((item) => (
+              <div key={item.step} className="text-center">
+                <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
+                  {item.step}
+                </div>
+                <h4 className="text-lg font-semibold mb-3 text-gray-900">
+                  {item.title}
+                </h4>
+                <p className="text-gray-600 leading-relaxed">
+                  {item.description}
+                </p>
               </div>
-              <h4 className="text-lg font-semibold mb-2">Sign Up</h4>
-              <p className="text-gray-600">
-                Create your account and join the SafeZone community
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-                2
-              </div>
-              <h4 className="text-lg font-semibold mb-2">Report Incidents</h4>
-              <p className="text-gray-600">
-                Share safety concerns with photos and details
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-                3
-              </div>
-              <h4 className="text-lg font-semibold mb-2">AI Verification</h4>
-              <p className="text-gray-600">
-                Our AI ensures reports are authentic and reliable
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-                4
-              </div>
-              <h4 className="text-lg font-semibold mb-2">Stay Informed</h4>
-              <p className="text-gray-600">
-                Get real-time updates and safety alerts
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-16" id="testimonials">
+      <section className="py-20" id="testimonials">
         <div className="container mx-auto px-4">
-          <h3 className="text-3xl font-bold text-center mb-12">
-            What Our Users Say
-          </h3>
+          <div className="text-center mb-16">
+            <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              What Our Users Say
+            </h3>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Real stories from real people making Addis Ababa safer
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="bg-white">
-                <CardContent className="p-6">
+              <Card key={index} className="bg-white shadow-sm border-0">
+                <CardContent className="p-8">
                   <div className="flex items-center mb-4">
                     {renderStars(testimonial.rating)}
                   </div>
-                  <p className="text-gray-700 mb-4 italic">
+                  <p className="text-gray-700 mb-6 italic leading-relaxed">
                     "{testimonial.content}"
                   </p>
                   <div className="flex items-center">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                      <User className="w-5 h-5 text-blue-600" />
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                      <span className="text-blue-600 font-semibold">
+                        {testimonial.avatar}
+                      </span>
                     </div>
                     <div>
-                      <div className="font-semibold">{testimonial.name}</div>
+                      <div className="font-semibold text-gray-900">
+                        {testimonial.name}
+                      </div>
                       <div className="text-sm text-gray-600">
                         {testimonial.role}
                       </div>
@@ -537,10 +592,10 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-20 bg-blue-600 text-white">
         <div className="container mx-auto px-4 text-center">
-          <h3 className="text-3xl font-bold mb-6">
+          <h3 className="text-3xl md:text-4xl font-bold mb-6">
             Ready to Make Addis Ababa Safer?
           </h3>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto leading-relaxed">
             Join thousands of residents working together to create a safer
             community for everyone. Sign up today and be part of the solution.
           </p>
@@ -549,13 +604,18 @@ export default function Home() {
               <Button
                 size="lg"
                 variant="secondary"
+                className="text-lg px-8 py-3"
                 onClick={() => setShowSignInDialog(true)}
               >
                 <User className="w-5 h-5 mr-2" />
                 Sign Up Now
               </Button>
             ) : (
-              <Button size="lg" variant="secondary">
+              <Button
+                size="lg"
+                variant="secondary"
+                className="text-lg px-8 py-3"
+              >
                 <Shield className="w-5 h-5 mr-2" />
                 Go to Dashboard
               </Button>
@@ -563,7 +623,7 @@ export default function Home() {
             <Button
               size="lg"
               variant="outline"
-              className="text-white border-white hover:bg-white hover:text-blue-600"
+              className="text-lg px-8 py-3 text-blue-600 border-white hover:bg-orange-600 hover:border-orange-600 hover:text-white"
               onClick={() =>
                 document
                   .getElementById("contact")
@@ -577,97 +637,119 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-16 bg-white" id="contact">
+      <section className="py-20 bg-white" id="contact">
         <div className="container mx-auto px-4">
-          <h3 className="text-3xl font-bold text-center mb-12">Get in Touch</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
-            <div>
-              <h4 className="text-xl font-semibold mb-4">
-                Contact Information
-              </h4>
-              <div className="space-y-4">
-                <div className="flex items-center">
-                  <MapPin className="w-5 h-5 text-blue-600 mr-3" />
-                  <span>Bole, Addis Ababa, Ethiopia</span>
+          <div className="text-center mb-16">
+            <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Get in Touch
+            </h3>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Have questions? We're here to help make Addis Ababa safer together
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <Card className="text-center border-0 shadow-sm">
+              <CardContent className="p-8">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MapPin className="w-6 h-6 text-blue-600" />
                 </div>
-                <div className="flex items-center">
-                  <User className="w-5 h-5 text-blue-600 mr-3" />
-                  <span>support@safezone.et</span>
+                <h4 className="font-semibold mb-2 text-gray-900">Visit Us</h4>
+                <p className="text-gray-600">Bole, Addis Ababa, Ethiopia</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center border-0 shadow-sm">
+              <CardContent className="p-8">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Mail className="w-6 h-6 text-blue-600" />
                 </div>
-                <div className="flex items-center">
-                  <Shield className="w-5 h-5 text-blue-600 mr-3" />
-                  <span>+251 11 123 4567</span>
+                <h4 className="font-semibold mb-2 text-gray-900">Email Us</h4>
+                <p className="text-gray-600">support@safezone.et</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center border-0 shadow-sm">
+              <CardContent className="p-8">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Phone className="w-6 h-6 text-blue-600" />
                 </div>
-              </div>
-            </div>
-            <div>
-              <h4 className="text-xl font-semibold mb-4">Office Hours</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Monday - Friday:</span>
-                  <span>9:00 AM - 6:00 PM</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Saturday:</span>
-                  <span>10:00 AM - 4:00 PM</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Sunday:</span>
-                  <span>Closed</span>
-                </div>
-              </div>
-            </div>
+                <h4 className="font-semibold mb-2 text-gray-900">Call Us</h4>
+                <p className="text-gray-600">+251 11 123 4567</p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gray-900 text-white py-16">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <Shield className="w-6 h-6" />
-                <h3 className="text-lg font-bold">SafeZone</h3>
+              <div className="flex items-center space-x-2 mb-6">
+                <Shield className="w-8 h-8" />
+                <h3 className="text-xl font-bold">SafeZone</h3>
               </div>
-              <p className="text-gray-400">
+              <p className="text-gray-400 leading-relaxed">
                 Making Addis Ababa safer through community-powered incident
                 reporting and real-time safety updates.
               </p>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Features</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>Incident Reporting</li>
-                <li>AI Verification</li>
-                <li>Real-time Updates</li>
-                <li>Emergency Response</li>
+              <h4 className="font-semibold mb-6">Features</h4>
+              <ul className="space-y-3 text-gray-400">
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Incident Reporting
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  AI Verification
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Real-time Updates
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Emergency Response
+                </li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>Help Center</li>
-                <li>Safety Guidelines</li>
-                <li>Contact Us</li>
-                <li>Report Issues</li>
+              <h4 className="font-semibold mb-6">Support</h4>
+              <ul className="space-y-3 text-gray-400">
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Help Center
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Safety Guidelines
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Contact Us
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Report Issues
+                </li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Connect</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>Twitter</li>
-                <li>Facebook</li>
-                <li>Telegram</li>
-                <li>Email</li>
+              <h4 className="font-semibold mb-6">Connect</h4>
+              <ul className="space-y-3 text-gray-400">
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Twitter
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Facebook
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  Telegram
+                </li>
+                <li className="hover:text-white transition-colors cursor-pointer">
+                  LinkedIn
+                </li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+          <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
             <p>© 2024 SafeZone Addis Ababa. All rights reserved.</p>
           </div>
         </div>
