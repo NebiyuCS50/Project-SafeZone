@@ -1,7 +1,10 @@
-"use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { auth } from "@/firebase/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+
 import {
   Card,
   CardContent,
@@ -42,6 +45,18 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsSignedIn(true);
+      } else {
+        setIsSignedIn(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+  const navigate = useNavigate();
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [showSignInDialog, setShowSignInDialog] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -145,14 +160,22 @@ export default function Home() {
     });
   };
 
-  const handleSignOut = () => {
-    setIsSignedIn(false);
-    toast({
-      title: "Signed Out",
-      description: "You have been successfully signed out.",
-    });
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      setIsSignedIn(false);
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out.",
+      });
+    } catch (error) {
+      toast({
+        title: error.message || "Error Signing Out",
+        description: "Failed to sign out",
+        variant: "destructive",
+      });
+    }
   };
-
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -237,7 +260,7 @@ export default function Home() {
                   onOpenChange={setShowSignInDialog}
                 >
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button onClick={navigate("/login")}>
                       <User className="w-4 h-4 mr-2" />
                       Sign In
                     </Button>
@@ -389,7 +412,7 @@ export default function Home() {
             <Button
               size="lg"
               className="text-lg px-8 py-3"
-              onClick={() => setShowSignInDialog(true)}
+              onClick={() => navigate("/signup")}
             >
               <User className="w-5 h-5 mr-2" />
               Get Started
@@ -605,7 +628,7 @@ export default function Home() {
                 size="lg"
                 variant="secondary"
                 className="text-lg px-8 py-3"
-                onClick={() => setShowSignInDialog(true)}
+                onClick={() => navigate("/signup")}
               >
                 <User className="w-5 h-5 mr-2" />
                 Sign Up Now
