@@ -1,34 +1,67 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import LoginPage from "./pages/LoginPage";
-import SignupPage from "./pages/SignupPage";
-import ReportPage from "./pages/ReportIncidentPage";
-import AdminDashboard from "./pages/AdminDashboard";
-import { RequireAuth, RequireAdmin } from "./components/auth/RouteGuards";
+// src/routes/routes.jsx
+import LandingPage from "@/pages/LandingPage";
+import SignupPage from "@/pages/SignUp/page";
+import LoginPage from "@/pages/Login/page";
+import ReportPage from "@/pages/ReportIncidentPage";
+import AdminDashboard from "@/pages/AdminDashboard";
 
-export default function AppRoutes() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route
-          path="/report"
-          element={
-            <RequireAuth>
-              <ReportPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/admin/dashboard"
-          element={
-            <RequireAdmin>
-              <AdminDashboard />
-            </RequireAdmin>
-          }
-        />
-        <Route path="*" element={<LoginPage />} />
-      </Routes>
-    </Router>
-  );
-}
+import { RequireAdmin } from "@/components/auth/requireAdmin";
+import { RequireAuth } from "@/components/auth/requireLogin";
+import AuthListener from "@/App";
+
+const routes = [
+  {
+    path: "/",
+    element: (
+      <AuthListener>
+        <LandingPage />
+      </AuthListener>
+    ),
+  },
+  {
+    path: "/login",
+    element: (
+      <AuthListener>
+        <LoginPage />
+      </AuthListener>
+    ),
+  },
+  {
+    path: "/signup",
+    element: (
+      <AuthListener>
+        <SignupPage />
+      </AuthListener>
+    ),
+  },
+  {
+    path: "/report",
+    element: (
+      <AuthListener>
+        <RequireAuth>
+          <ReportPage />
+        </RequireAuth>
+      </AuthListener>
+    ),
+  },
+  {
+    path: "/admin/dashboard",
+    element: (
+      <AuthListener>
+        <RequireAdmin>
+          <AdminDashboard />
+        </RequireAdmin>
+      </AuthListener>
+    ),
+  },
+  {
+    path: "*",
+    element: (
+      <AuthListener>
+        <LandingPage />
+      </AuthListener>
+    ),
+  },
+];
+
+export default routes;
