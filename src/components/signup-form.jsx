@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AddisPic from "@/assets/AddisPic.jpeg";
+import Logo from "@/assets/Logo.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -65,7 +66,11 @@ export function SignupForm({ className, ...props }) {
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <div>
-                  <img src="" alt="" srcset="" />
+                  <img
+                    src={Logo}
+                    alt="Logo"
+                    className="mx-auto w-32 h-32 object-cover rounded-md"
+                  />
                 </div>
                 <h1 className="text-2xl font-bold">Create your account</h1>
                 <p className="text-muted-foreground text-sm text-balance">
