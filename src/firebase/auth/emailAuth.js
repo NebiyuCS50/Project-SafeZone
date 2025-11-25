@@ -7,16 +7,29 @@ import {
 import { doc, setDoc } from "firebase/firestore";
 
 // SIGN UP
-export async function signUp(email, password, role = "user") {
+export async function signUp(
+  name,
+  photoUrl,
+  email,
+  password,
+  role = "user",
+  phoneNumber = null
+) {
   const userCredential = await createUserWithEmailAndPassword(
     auth,
     email,
-    password
+    name,
+    photoUrl,
+    password,
+    phoneNumber
   );
   const user = userCredential.user;
 
   await setDoc(doc(db, "users", user.uid), {
     email,
+    name,
+    photoUrl,
+    phoneNumber,
     role,
     createdAt: Date.now(),
   });
