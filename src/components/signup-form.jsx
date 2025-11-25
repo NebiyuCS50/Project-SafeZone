@@ -64,6 +64,9 @@ export function SignupForm({ className, ...props }) {
           <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
+                <div>
+                  <img src="" alt="" srcset="" />
+                </div>
                 <h1 className="text-2xl font-bold">Create your account</h1>
                 <p className="text-muted-foreground text-sm text-balance">
                   Enter your email below to create your account
