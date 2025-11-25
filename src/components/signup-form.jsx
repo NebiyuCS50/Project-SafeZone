@@ -16,54 +16,40 @@ import { useNavigate } from "react-router";
 import { useToast } from "@/hooks/use-toast";
 import Loading from "./ui/Loading";
 
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SignupSchema } from "@/validation/signupSchema";
+
 export function SignupForm({ className, ...props }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (loading) {
-      return <Loading />;
-    }
-    if (!email || !password) {
-      toast({
-        title: "Missing fields",
-        description: "Email and password required",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (password.length < 8) {
-      toast({
-        title: "Weak password",
-        description: "Password must be at least 8 characters",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (password !== confirm) {
-      toast({
-        title: "Passwords do not match",
-        description: "Please confirm your password",
-        variant: "destructive",
-      });
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(SignupSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirm: "",
+    },
+  });
+
+  const onSubmit = async (values) => {
+    if (loading) return;
 
     setLoading(true);
     try {
-      await signUp(email, password, "user");
+      await signUp(values.email, values.password, "user");
       toast({ title: "Account created", description: "You can now sign in" });
       navigate("/login");
     } catch (err) {
       console.error(err);
       toast({
         title: err?.message || "Signup failed",
-        description: "",
         variant: "destructive",
       });
     } finally {
@@ -75,7 +61,7 @@ export function SignupForm({ className, ...props }) {
     <div className={("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8" onSubmit={handleSubmit}>
+          <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Create your account</h1>
@@ -84,22 +70,21 @@ export function SignupForm({ className, ...props }) {
                 </p>
               </div>
 
+              {/* EMAIL */}
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
                   type="email"
                   placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  {...register("email")}
                 />
-                <FieldDescription>
-                  We'll use this to contact you. We will not share your email
-                  with anyone else.
-                </FieldDescription>
+                {errors.email && (
+                  <p className="text-red-500 text-sm">{errors.email.message}</p>
+                )}
               </Field>
 
+              {/* PASSWORD + CONFIRM */}
               <Field>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -107,11 +92,15 @@ export function SignupForm({ className, ...props }) {
                     <Input
                       id="password"
                       type="password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      {...register("password")}
                     />
+                    {errors.password && (
+                      <p className="text-red-500 text-sm">
+                        {errors.password.message}
+                      </p>
+                    )}
                   </div>
+
                   <div>
                     <FieldLabel htmlFor="confirm-password">
                       Confirm Password
@@ -119,15 +108,15 @@ export function SignupForm({ className, ...props }) {
                     <Input
                       id="confirm-password"
                       type="password"
-                      required
-                      value={confirm}
-                      onChange={(e) => setConfirm(e.target.value)}
+                      {...register("confirm")}
                     />
+                    {errors.confirm && (
+                      <p className="text-red-500 text-sm">
+                        {errors.confirm.message}
+                      </p>
+                    )}
                   </div>
                 </div>
-                <FieldDescription>
-                  Must be at least 8 characters long.
-                </FieldDescription>
               </Field>
 
               <Field>
