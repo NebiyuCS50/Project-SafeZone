@@ -260,7 +260,7 @@ export default function Home() {
                   onOpenChange={setShowSignInDialog}
                 >
                   <DialogTrigger asChild>
-                    <Button onClick={navigate("/login")}>
+                    <Button onClick={() => navigate("/login")}>
                       <User className="w-4 h-4 mr-2" />
                       Sign In
                     </Button>
