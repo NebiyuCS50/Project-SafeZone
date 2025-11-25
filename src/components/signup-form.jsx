@@ -69,7 +69,7 @@ export function SignupForm({ className, ...props }) {
                   <img
                     src={Logo}
                     alt="Logo"
-                    className="mx-auto w-32 h-32 object-cover rounded-md"
+                    className="mx-auto w-28 h-28 object-cover rounded-md"
                   />
                 </div>
                 <h1 className="text-2xl font-bold">Create your account</h1>
