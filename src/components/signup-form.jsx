@@ -137,15 +137,40 @@ export function SignupForm({ className, ...props }) {
                 Or continue with
               </FieldSeparator>
 
-              <Field className="grid grid-cols-3 gap-4">
-                <Button variant="outline" type="button">
-                  Apple
-                </Button>
-                <Button variant="outline" type="button">
-                  Google
-                </Button>
-                <Button variant="outline" type="button">
-                  Meta
+              <Field className="grid grid-cols-1 gap-4">
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="w-full flex items-center justify-center gap-3 px-4 py-2"
+                >
+                  {/* Google "G" SVG */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 48 48"
+                    className="w-5 h-5"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill="#fbc02d"
+                      d="M43.6 20.5H42V20H24v8h11.3C34.6 32.9 30 36 24 36c-7.7 0-14-6.3-14-14s6.3-14 14-14c3.6 0 6.8 1.3 9.3 3.4l6.2-6.2C36.2 2.7 30.5 0 24 0 10.7 0 0 10.7 0 24s10.7 24 24 24c12.4 0 23-9 23.9-21.2.1-1 .1-2 .1-2.3z"
+                    />
+                    <path
+                      fill="#e53935"
+                      d="M6.3 14.8l6.8 5c1.5-4.5 5.7-7.8 10.9-7.8 3.6 0 6.8 1.3 9.3 3.4l6.2-6.2C36.2 2.7 30.5 0 24 0 15.3 0 7.9 5.1 4 12.5z"
+                    />
+                    <path
+                      fill="#4caf50"
+                      d="M24 48c6.5 0 12.2-2.2 16.7-6l-8-6.6c-2.4 1.6-5.3 2.5-8.7 2.5-6 0-10.8-3.1-13.3-7.6l-6.9 5.3C7.9 42.9 15.3 48 24 48z"
+                    />
+                    <path
+                      fill="#1565c0"
+                      d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.1-3.4 5.6-6.4 7.1v5.6C36.2 36.2 43.6 29.9 43.6 20.5z"
+                    />
+                  </svg>
+
+                  <span className="text-sm font-medium">
+                    Continue with Google
+                  </span>
                 </Button>
               </Field>
 
