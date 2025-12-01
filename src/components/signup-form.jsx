@@ -44,7 +44,14 @@ export function SignupForm({ className, ...props }) {
 
     setLoading(true);
     try {
-      await signUp(values.email, values.password, "user");
+      await signUp(
+        values.email,
+        values.password,
+        values.name,
+        values.photoUrl,
+        values.phoneNumber,
+        "user"
+      );
       toast({ title: "Account created", description: "You can now sign in" });
       navigate("/login");
     } catch (err) {
@@ -77,10 +84,22 @@ export function SignupForm({ className, ...props }) {
                   Enter your email below to create your account
                 </p>
               </div>
-
-              {/* EMAIL */}
+              {/* NAME */}
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="name">
+                  Name<span className="text-red-500 -ml-1">*</span>
+                </FieldLabel>
+                <Input id="name" type="text" {...register("name")} />
+                {errors.name && (
+                  <p className="text-red-500 text-sm">{errors.name.message}</p>
+                )}
+              </Field>
+
+              {/*EMAIL*/}
+              <Field>
+                <FieldLabel htmlFor="email">
+                  Email<span className="text-red-500 -ml-1">*</span>
+                </FieldLabel>
                 <Input
                   id="email"
                   type="email"
@@ -92,11 +111,46 @@ export function SignupForm({ className, ...props }) {
                 )}
               </Field>
 
+              {/* PHONE NUMBER */}
+              <Field>
+                <FieldLabel htmlFor="phone">
+                  Phone Number<span className="text-red-500 -ml-1">*</span>
+                </FieldLabel>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="+251 9XXXXXXXX"
+                  {...register("phoneNumber")}
+                />
+                {errors.phoneNumber && (
+                  <p className="text-red-500 text-sm">
+                    {errors.phoneNumber.message}
+                  </p>
+                )}
+              </Field>
+              {/*IMAGE*/}
+              <Field>
+                <FieldLabel htmlFor="image">Image</FieldLabel>
+                <Input
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  {...register("photoUrl")}
+                />
+                {errors.photoUrl && (
+                  <p className="text-red-500 text-sm">
+                    {errors.photoUrl.message}
+                  </p>
+                )}
+              </Field>
+
               {/* PASSWORD + CONFIRM */}
               <Field>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <FieldLabel htmlFor="password">Password</FieldLabel>
+                    <FieldLabel htmlFor="password">
+                      Password<span className="text-red-500 -ml-1">*</span>
+                    </FieldLabel>
                     <Input
                       id="password"
                       type="password"
@@ -112,6 +166,7 @@ export function SignupForm({ className, ...props }) {
                   <div>
                     <FieldLabel htmlFor="confirm-password">
                       Confirm Password
+                      <span className="text-red-500 -ml-1">*</span>
                     </FieldLabel>
                     <Input
                       id="confirm-password"
@@ -191,8 +246,8 @@ export function SignupForm({ className, ...props }) {
       </Card>
 
       <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+        By clicking continue, you agree to our Terms of Service and Privacy
+        Policy.
       </FieldDescription>
     </div>
   );
