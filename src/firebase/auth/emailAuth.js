@@ -3,6 +3,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  updateProfile,
+  sendEmailVerification,
 } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
@@ -18,13 +20,20 @@ export async function signUp(
   const userCredential = await createUserWithEmailAndPassword(
     auth,
     email,
-    name,
-    photoUrl,
-    password,
-    phoneNumber
+    password
   );
   const user = userCredential.user;
-
+  if (name || photoUrl) {
+    await updateProfile(user, {
+      displayName: name || undefined,
+      photoURL: photoUrl || undefined,
+    });
+  }
+  try {
+    await sendEmailVerification(user);
+  } catch (e) {
+    console.warn("sendEmailVerification failed:", e);
+  }
   await setDoc(doc(db, "users", user.uid), {
     email,
     name,
