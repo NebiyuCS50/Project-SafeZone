@@ -48,7 +48,6 @@ export function SignupForm({ className, ...props }) {
         values.email,
         values.password,
         values.name,
-        values.photoUrl,
         values.phoneNumber,
         "user"
       );
@@ -125,21 +124,6 @@ export function SignupForm({ className, ...props }) {
                 {errors.phoneNumber && (
                   <p className="text-red-500 text-sm">
                     {errors.phoneNumber.message}
-                  </p>
-                )}
-              </Field>
-              {/*IMAGE*/}
-              <Field>
-                <FieldLabel htmlFor="image">Image</FieldLabel>
-                <Input
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  {...register("photoUrl")}
-                />
-                {errors.photoUrl && (
-                  <p className="text-red-500 text-sm">
-                    {errors.photoUrl.message}
                   </p>
                 )}
               </Field>
