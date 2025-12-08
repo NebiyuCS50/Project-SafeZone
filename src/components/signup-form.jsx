@@ -51,6 +51,7 @@ export function SignupForm({ className, ...props }) {
         values.phoneNumber,
         "user"
       );
+      setLoading(false);
       toast({ title: "Account created", description: "You can now sign in" });
       navigate("/login");
     } catch (err) {
