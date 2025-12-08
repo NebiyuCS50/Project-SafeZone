@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { signUp } from "@/firebase/auth/emailAuth";
-import { useNavigate } from "react-router";
+
 import { useToast } from "@/hooks/use-toast";
 import Loading from "./ui/Loading";
 

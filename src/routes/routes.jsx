@@ -1,4 +1,3 @@
-// src/routes/routes.jsx
 import LandingPage from "@/pages/LandingPage";
 import SignupPage from "@/pages/SignUp/page";
 import LoginPage from "@/pages/Login/page";
@@ -7,61 +6,28 @@ import AdminDashboard from "@/pages/AdminDashboard";
 
 import { RequireAdmin } from "@/components/auth/requireAdmin";
 import { RequireAuth } from "@/components/auth/requireLogin";
-import AuthListener from "@/App";
 
 const routes = [
-  {
-    path: "/",
-    element: (
-      <AuthListener>
-        <LandingPage />
-      </AuthListener>
-    ),
-  },
-  {
-    path: "/login",
-    element: (
-      <AuthListener>
-        <LoginPage />
-      </AuthListener>
-    ),
-  },
-  {
-    path: "/signup",
-    element: (
-      <AuthListener>
-        <SignupPage />
-      </AuthListener>
-    ),
-  },
+  { path: "/", element: <LandingPage /> },
+  { path: "/login", element: <LoginPage /> },
+  { path: "/signup", element: <SignupPage /> },
   {
     path: "/report",
     element: (
-      <AuthListener>
-        <RequireAuth>
-          <ReportPage />
-        </RequireAuth>
-      </AuthListener>
+      <RequireAuth>
+        <ReportPage />
+      </RequireAuth>
     ),
   },
   {
     path: "/admin/dashboard",
     element: (
-      <AuthListener>
-        <RequireAdmin>
-          <AdminDashboard />
-        </RequireAdmin>
-      </AuthListener>
+      <RequireAdmin>
+        <AdminDashboard />
+      </RequireAdmin>
     ),
   },
-  {
-    path: "*",
-    element: (
-      <AuthListener>
-        <LandingPage />
-      </AuthListener>
-    ),
-  },
+  { path: "*", element: <LandingPage /> },
 ];
 
 export default routes;

@@ -7,7 +7,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 
 export function LoginForm({ className, ...props }) {
   return (
