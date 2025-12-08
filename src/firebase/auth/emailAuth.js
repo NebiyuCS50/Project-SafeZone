@@ -27,13 +27,17 @@ export async function signUp(
       displayName: name || undefined,
     });
   }
-  await setDoc(doc(db, "users", user.uid), {
-    email,
-    name,
-    phoneNumber,
-    role,
-    createdAt: Date.now(),
-  });
+  try {
+    await setDoc(doc(db, "users", user.uid), {
+      email,
+      name,
+      phoneNumber,
+      role,
+      createdAt: Date.now(),
+    });
+  } catch (error) {
+    console.error("Error writing user document: ", error);
+  }
 
   return user;
 }
