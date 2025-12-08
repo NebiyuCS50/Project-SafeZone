@@ -9,10 +9,11 @@ export default function LoginPage() {
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">
-            <div className="bg-white text-primary-foreground flex size-10 items-center justify-center rounded-md">
+            <div className="bg-white text-primary-foreground flex size-13 items-center justify-center rounded-md">
               <img src={logo} alt="Logo" />
             </div>
-            Safe Zone
+
+            <p className="text-lg font-semibold mr-8">Safe Zone</p>
           </a>
         </div>
         <div className="flex flex-1 items-center justify-center">
