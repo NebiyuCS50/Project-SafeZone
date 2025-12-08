@@ -53,7 +53,6 @@ export function SignupForm({ className, ...props }) {
         values.phoneNumber
       );
       console.log("User signed up successfully");
-      setLoading(false);
       toast({ title: "Account created", description: "You can now sign in" });
       navigate("/login");
     } catch (err) {
