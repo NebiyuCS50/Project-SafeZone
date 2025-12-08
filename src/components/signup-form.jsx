@@ -45,12 +45,13 @@ export function SignupForm({ className, ...props }) {
     setLoading(true);
     try {
       await signUp(
+        values.name,
         values.email,
         values.password,
-        values.name,
-        values.phoneNumber,
-        "user"
+        "user",
+        values.phoneNumber
       );
+      console.log("User signed up successfully");
       setLoading(false);
       toast({ title: "Account created", description: "You can now sign in" });
       navigate("/login");
