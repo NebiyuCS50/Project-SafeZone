@@ -47,7 +47,7 @@ export function LoginForm({ className, ...props }) {
         ),
       });
       setTimeout(() => {
-        navigate("/report");
+        navigate("/userdashboard");
       }, 1600);
     } catch (err) {
       toast("Login failed", {
