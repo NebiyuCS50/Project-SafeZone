@@ -1,0 +1,155 @@
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Shield,
+  Map,
+  Plus,
+  FileText,
+  Bell,
+  User,
+  Settings,
+  LogOut,
+  X,
+} from "lucide-react";
+import { toast } from "sonner";
+
+const navigation = [
+  {
+    title: "Dashboard",
+    items: [{ title: "Map Visualization", icon: Map, href: "/dashboard/map" }],
+  },
+  {
+    title: "Incidents",
+    items: [
+      { title: "Report Incident", icon: Plus, href: "/dashboard/report" },
+      { title: "My Reports", icon: FileText, href: "/dashboard/reports" },
+    ],
+  },
+  {
+    title: "Safety",
+    items: [{ title: "Live Alerts", icon: Bell, href: "/dashboard/alerts" }],
+  },
+  {
+    title: "Account",
+    items: [
+      { title: "Profile", icon: User, href: "/dashboard/profile" },
+      { title: "Settings", icon: Settings, href: "/dashboard/settings" },
+    ],
+  },
+];
+
+export default function Sidebar({
+  activeTab,
+  onTabChange,
+  sidebarOpen,
+  setSidebarOpen,
+}) {
+  const handleSignOut = () => {
+    toast.success("Signed Out", {
+      description: "You have been successfully signed out.",
+    });
+  };
+
+  const handleNavClick = (tab) => {
+    onTabChange(tab);
+    if (setSidebarOpen) setSidebarOpen(false);
+  };
+
+  return (
+    <>
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } fixed lg:relative lg:translate-x-0 z-30 w-64 h-full bg-white shadow-lg transition-transform duration-200 ease-in-out`}
+      >
+        <div className="flex h-full flex-col">
+          {/* Sidebar Header */}
+          <div className="p-4 border-b">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Shield className="w-6 h-6 text-blue-600" />
+                <span className="text-lg font-semibold">SafeZone</span>
+                <Badge variant="secondary" className="ml-2">
+                  Addis Ababa
+                </Badge>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
+            {navigation.map((section) => (
+              <div key={section.title}>
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                  {section.title}
+                </h3>
+                <ul className="space-y-1">
+                  {section.items.map((item) => (
+                    <li key={item.title}>
+                      <Button
+                        variant={
+                          activeTab === item.href.split("/").pop()
+                            ? "secondary"
+                            : "ghost"
+                        }
+                        className="w-full justify-start h-10"
+                        onClick={() =>
+                          handleNavClick(item.href.split("/").pop())
+                        }
+                      >
+                        <item.icon className="w-4 h-4 mr-3" />
+                        {item.title}
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+
+          {/* Sidebar Footer */}
+          <div className="p-4 border-t">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-medium">Abeba Kebede</div>
+                <div className="text-xs text-gray-500">
+                  abeba.kebede@example.com
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 pt-3 border-t">
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={handleSignOut}
+              >
+                <LogOut className="w-4 h-4 mr-3" />
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}
