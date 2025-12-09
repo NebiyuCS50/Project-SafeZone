@@ -8,7 +8,7 @@ export const SignupSchema = z
         if (!val) return false;
 
         if (val.startsWith("+251")) {
-          return /^\+251\d{8}$/.test(val);
+          return /^\+251\d{9}$/.test(val);
         }
 
         if (val.startsWith("09")) {
@@ -24,7 +24,6 @@ export const SignupSchema = z
     email: z.email("Enter a valid email"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirm: z.string().min(8, "Confirm password must match"),
-    photoUrl: z.url("Enter a valid image URL").optional(),
   })
   .refine((data) => data.password === data.confirm, {
     message: "Passwords do not match",
