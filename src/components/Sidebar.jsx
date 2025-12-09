@@ -75,12 +75,19 @@ export default function Sidebar({
           {/* Sidebar Header */}
           <div className="p-4 border-b">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Shield className="w-6 h-6 text-blue-600" />
-                <span className="text-lg font-semibold">SafeZone</span>
-                <Badge variant="secondary" className="ml-2">
-                  Addis Ababa
-                </Badge>
+              <div className="flex items-center space-x-2  lg:flex">
+                <span className="text-lg font-semibold">
+                  SafeZone{" "}
+                  <sup>
+                    <Badge variant="secondary" className="ml-1">
+                      Addis Ababa
+                      <span className="relative flex h-2 w-2 ml-1">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                      </span>
+                    </Badge>
+                  </sup>
+                </span>
               </div>
               <Button
                 variant="ghost"
