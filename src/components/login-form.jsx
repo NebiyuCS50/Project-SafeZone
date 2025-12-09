@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -7,11 +8,62 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { login } from "@/firebase/auth/emailAuth";
 
 export function LoginForm({ className, ...props }) {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    if (loading) return;
+
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+
+    setLoading(true);
+    try {
+      await login(email, password);
+      toast("Login successful", {
+        description: (
+          <span className="flex items-center gap-2">
+            <svg
+              className="w-4 h-4 text-green-500 font-bold"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            <span className="font-bold">Welcome back!</span>
+          </span>
+        ),
+      });
+      setTimeout(() => {
+        navigate("/report");
+      }, 1200);
+    } catch (err) {
+      toast("Login failed", {
+        description: err?.message || "Invalid credentials",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
-    <form className={("flex flex-col gap-6", className)} {...props}>
+    <form
+      className={("flex flex-col gap-6", className)}
+      {...props}
+      onSubmit={onSubmit}
+    >
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Login to your account</h1>
