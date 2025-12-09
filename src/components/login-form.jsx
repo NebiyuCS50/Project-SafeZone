@@ -48,7 +48,7 @@ export function LoginForm({ className, ...props }) {
       });
       setTimeout(() => {
         navigate("/report");
-      }, 1200);
+      }, 1600);
     } catch (err) {
       toast("Login failed", {
         description: err?.message || "Invalid credentials",

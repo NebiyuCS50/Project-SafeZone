@@ -68,7 +68,7 @@ export function SignupForm({ className, ...props }) {
       });
       setTimeout(() => {
         navigate("/login");
-      }, 1200);
+      }, 1600);
     } catch (err) {
       console.error(err);
       alert(err.message);
