@@ -167,7 +167,7 @@ export function SignupForm({ className, ...props }) {
             </div>
           </Field>
 
-          <Field>
+          <Field className="mt-4">
             <Button type="submit" disabled={loading}>
               {loading ? "Creating..." : "Create Account"}
             </Button>
