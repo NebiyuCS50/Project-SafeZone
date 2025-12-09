@@ -1,22 +1,14 @@
 import { useState } from "react";
 import AddisPic from "@/assets/AddisPic.jpeg";
 import Logo from "@/assets/Logo.png";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-} from "@/components/ui/field";
+
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { signUp } from "@/firebase/auth/emailAuth";
-
-import { useToast } from "@/hooks/use-toast";
-import Loading from "./ui/Loading";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,7 +16,7 @@ import { SignupSchema } from "@/validation/signupSchema";
 
 export function SignupForm({ className, ...props }) {
   const navigate = useNavigate();
-  const { toast } = useToast();
+
   const [loading, setLoading] = useState(false);
 
   const {
@@ -53,14 +45,33 @@ export function SignupForm({ className, ...props }) {
         values.phoneNumber
       );
       console.log("User signed up successfully");
-      toast({ title: "Account created", description: "You can now sign in" });
-      navigate("/login");
+
+      toast("Account created", {
+        description: (
+          <span className="flex items-center gap-2">
+            <svg
+              className="w-4 h-4 text-green-500 font-bold"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            <span className="font-bold">You can now sign in.</span>
+          </span>
+        ),
+      });
+      setTimeout(() => {
+        navigate("/login");
+      }, 1200);
     } catch (err) {
       console.error(err);
-      toast({
-        title: err?.message || "Signup failed",
-        variant: "destructive",
-      });
+      alert(err.message);
     } finally {
       setLoading(false);
     }
