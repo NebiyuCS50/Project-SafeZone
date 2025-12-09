@@ -1,8 +1,10 @@
 import LandingPage from "@/pages/LandingPage";
 import SignupPage from "@/pages/SignUp/page";
 import LoginPage from "@/pages/Login/page";
-import ReportPage from "@/pages/ReportIncidentPage";
+import ReportPage from "@/pages/UserDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
+
+import UserDashboard from "@/pages/UserDashboard";
 
 import { RequireAdmin } from "@/components/auth/requireAdmin";
 import { RequireAuth } from "@/components/auth/requireLogin";
@@ -12,10 +14,10 @@ const routes = [
   { path: "/login", element: <LoginPage /> },
   { path: "/signup", element: <SignupPage /> },
   {
-    path: "/report",
+    path: "/userdashboard",
     element: (
       <RequireAuth>
-        <ReportPage />
+        <UserDashboard />
       </RequireAuth>
     ),
   },
