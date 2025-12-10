@@ -1,10 +1,14 @@
 import { useEffect } from "react";
 import { auth, db } from "@/firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
+import { logout, isSessionExpired } from "@/firebase/auth/emailAuth";
+import { toast } from "sonner";
 
 export default function AuthListener({ children }) {
   const { setUser, setRole, setLoading } = useAuthStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Start with loading = true
@@ -41,6 +45,15 @@ export default function AuthListener({ children }) {
     // Cleanup listener on unmount
     return () => unsub();
   }, [setUser, setRole, setLoading]);
+  useEffect(() => {
+    if (isSessionExpired()) {
+      logout();
+      toast.error("Session Expired", {
+        description: "Please log in again to continue using your account.",
+      });
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
   return children;
 }
