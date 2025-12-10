@@ -1,7 +1,7 @@
 import LandingPage from "@/pages/LandingPage";
 import SignupPage from "@/pages/SignUp/page";
 import LoginPage from "@/pages/Login/page";
-import ReportPage from "@/pages/UserDashboard";
+import AuthListener from "@/App";
 import AdminDashboard from "@/pages/AdminDashboard";
 
 import UserDashboard from "@/pages/UserDashboard";
@@ -10,26 +10,58 @@ import { RequireAdmin } from "@/components/auth/requireAdmin";
 import { RequireAuth } from "@/components/auth/requireLogin";
 
 const routes = [
-  { path: "/", element: <LandingPage /> },
-  { path: "/login", element: <LoginPage /> },
-  { path: "/signup", element: <SignupPage /> },
+  {
+    path: "/",
+    element: (
+      <AuthListener>
+        <LandingPage />
+      </AuthListener>
+    ),
+  },
+  {
+    path: "/login",
+    element: (
+      <AuthListener>
+        <LoginPage />
+      </AuthListener>
+    ),
+  },
+  {
+    path: "/signup",
+    element: (
+      <AuthListener>
+        <SignupPage />
+      </AuthListener>
+    ),
+  },
   {
     path: "/userdashboard",
     element: (
-      <RequireAuth>
-        <UserDashboard />
-      </RequireAuth>
+      <AuthListener>
+        <RequireAuth>
+          <UserDashboard />
+        </RequireAuth>
+      </AuthListener>
     ),
   },
   {
     path: "/admin/dashboard",
     element: (
-      <RequireAdmin>
-        <AdminDashboard />
-      </RequireAdmin>
+      <AuthListener>
+        <RequireAdmin>
+          <AdminDashboard />
+        </RequireAdmin>
+      </AuthListener>
     ),
   },
-  { path: "*", element: <LandingPage /> },
+  {
+    path: "*",
+    element: (
+      <AdminDashboard>
+        <LandingPage />
+      </AdminDashboard>
+    ),
+  },
 ];
 
 export default routes;
