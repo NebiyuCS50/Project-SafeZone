@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
+import { ReportIncident } from "@/components/ReportIncident";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("map");
@@ -90,33 +91,7 @@ export default function Dashboard() {
       case "report":
         return (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Report Incident
-              </h2>
-              <p className="text-gray-600">
-                Help keep Addis Ababa safe by reporting incidents
-              </p>
-            </div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Incident Details</CardTitle>
-                <CardDescription>
-                  Provide accurate information to help verify and respond
-                  quickly
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center py-12">
-                <Plus className="w-16 h-16 text-gray-400 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Incident Report Form
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Comprehensive incident reporting form with image upload
-                </p>
-                <Badge variant="outline">Form Component Ready</Badge>
-              </CardContent>
-            </Card>
+            <ReportIncident />
           </div>
         );
       case "reports":
