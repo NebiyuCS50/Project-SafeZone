@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { signOut } from "firebase/auth";
+
 import { auth } from "@/firebase/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -42,7 +42,6 @@ import {
   Phone,
   MessageSquare,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   useEffect(() => {
@@ -58,14 +57,7 @@ export default function Home() {
   }, []);
   const navigate = useNavigate();
   const [isSignedIn, setIsSignedIn] = useState(false);
-  const [showSignInDialog, setShowSignInDialog] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Sign in form states
-  const [signInEmail, setSignInEmail] = useState("");
-  const [signInPassword, setSignInPassword] = useState("");
-
-  const { toast } = useToast();
 
   const features = [
     {
@@ -139,43 +131,6 @@ export default function Home() {
     },
   ];
 
-  const handleSignIn = () => {
-    if (!signInEmail || !signInPassword) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter both email and password",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Simulate sign in
-    setIsSignedIn(true);
-    setShowSignInDialog(false);
-    setSignInEmail("");
-    setSignInPassword("");
-    toast({
-      title: "Sign In Successful",
-      description: "Welcome back to SafeZone!",
-    });
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      setIsSignedIn(false);
-      toast({
-        title: "Signed Out",
-        description: "You have been successfully signed out.",
-      });
-    } catch (error) {
-      toast({
-        title: error.message || "Error Signing Out",
-        description: "Failed to sign out",
-        variant: "destructive",
-      });
-    }
-  };
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -243,69 +198,10 @@ export default function Home() {
               >
                 Contact
               </Button>
-              {isSignedIn ? (
-                <div className="flex items-center space-x-3">
-                  <Badge variant="outline" className="flex items-center">
-                    <User className="w-3 h-3 mr-1" />
-                    Signed In
-                  </Badge>
-                  <Button variant="outline" onClick={handleSignOut}>
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </Button>
-                </div>
-              ) : (
-                <Dialog
-                  open={showSignInDialog}
-                  onOpenChange={setShowSignInDialog}
-                >
-                  <DialogTrigger asChild>
-                    <Button onClick={() => navigate("/login")}>
-                      <User className="w-4 h-4 mr-2" />
-                      Sign In
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Sign In to SafeZone</DialogTitle>
-                      <DialogDescription>
-                        Enter your credentials to access SafeZone features
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="your@email.com"
-                          value={signInEmail}
-                          onChange={(e) => setSignInEmail(e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input
-                          id="password"
-                          type="password"
-                          placeholder="Enter your password"
-                          value={signInPassword}
-                          onChange={(e) => setSignInPassword(e.target.value)}
-                        />
-                      </div>
-                      <Button onClick={handleSignIn} className="w-full">
-                        Sign In
-                      </Button>
-                      <div className="text-center text-sm text-gray-600">
-                        Don't have an account?{" "}
-                        <Button variant="link" className="p-0 h-auto">
-                          Sign Up
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              )}
+              <Button onClick={() => navigate("/login")}>
+                <User className="w-4 h-4 mr-2" />
+                Sign In
+              </Button>
             </nav>
 
             {/* Mobile Menu Button */}
@@ -367,26 +263,10 @@ export default function Home() {
                 >
                   Contact
                 </Button>
-                {isSignedIn ? (
-                  <div className="flex flex-col space-y-3 pt-3 border-t">
-                    <Badge
-                      variant="outline"
-                      className="flex items-center justify-center"
-                    >
-                      <User className="w-3 h-3 mr-1" />
-                      Signed In
-                    </Badge>
-                    <Button variant="outline" onClick={handleSignOut}>
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
-                    </Button>
-                  </div>
-                ) : (
-                  <Button onClick={() => setShowSignInDialog(true)}>
-                    <User className="w-4 h-4 mr-2" />
-                    Sign In
-                  </Button>
-                )}
+                <Button onClick={() => navigate("/login")}>
+                  <User className="w-4 h-4 mr-2" />
+                  Sign In
+                </Button>
               </div>
             </nav>
           )}
@@ -638,6 +518,7 @@ export default function Home() {
                 size="lg"
                 variant="secondary"
                 className="text-lg px-8 py-3"
+                onClick={() => navigate("/login")}
               >
                 <Shield className="w-5 h-5 mr-2" />
                 Go to Dashboard
