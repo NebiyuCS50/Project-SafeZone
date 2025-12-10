@@ -2,7 +2,7 @@ import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import routes from "./routes/routes.jsx";
-import AuthListener from "./App"; // your auth listener
+
 import "./index.css";
 import { Toaster } from "sonner";
 
@@ -11,9 +11,7 @@ const root = createRoot(document.getElementById("root"));
 
 root.render(
   <StrictMode>
-    <AuthListener>
-      <Toaster position="top-right" richColors />
-      <RouterProvider router={router} />
-    </AuthListener>
+    <Toaster position="top-right" richColors />
+    <RouterProvider router={router} />
   </StrictMode>
 );
