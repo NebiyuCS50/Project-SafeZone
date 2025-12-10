@@ -42,6 +42,7 @@ export async function signUp(
   return user;
 }
 
+const LOGIN_TIMESTAMP_KEY = "lastLoginTimestamp";
 // LOGIN
 export async function login(email, password) {
   const userCredential = await signInWithEmailAndPassword(
@@ -49,10 +50,20 @@ export async function login(email, password) {
     email,
     password
   );
+  localStorage.setItem(LOGIN_TIMESTAMP_KEY, Date.now().toString());
   return userCredential.user;
 }
 
 // LOGOUT
 export async function logout() {
   await signOut(auth);
+  localStorage.removeItem(LOGIN_TIMESTAMP_KEY);
+}
+// Utility to check if session expired (returns true if expired)
+export function isSessionExpired() {
+  const loginTime = parseInt(localStorage.getItem(LOGIN_TIMESTAMP_KEY), 10);
+  if (!loginTime) return false;
+  const now = Date.now();
+  const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+  return now - loginTime > threeDaysMs;
 }
