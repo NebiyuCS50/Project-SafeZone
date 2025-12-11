@@ -91,6 +91,14 @@ export default function Dashboard() {
       case "report":
         return (
           <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Report Incident
+              </h2>
+              <p className="text-gray-600">
+                Help keep Addis Ababa safe by reporting incidents
+              </p>
+            </div>
             <ReportIncident />
           </div>
         );
