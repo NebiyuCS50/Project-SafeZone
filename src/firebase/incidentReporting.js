@@ -1,8 +1,8 @@
 // utils/createIncident.js
 
-import { db, storage } from "@/firebase/firebase";
+import { db } from "@/firebase/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { uploadToImageKit } from "@/utils/uploadToImageKit";
 
 export async function IncidentReporting({
   incidentType,
@@ -17,11 +17,7 @@ export async function IncidentReporting({
 
   // 1️⃣ Upload image if provided
   if (file) {
-    const timestamp = Date.now();
-    const storageRef = ref(storage, `incidents/${user.uid}/${timestamp}.jpg`);
-
-    await uploadBytes(storageRef, file); // upload the image
-    imageUrl = await getDownloadURL(storageRef); // get the download URL
+    imageUrl = await uploadToImageKit(file);
   }
 
   // 2️⃣ Prepare incident object
