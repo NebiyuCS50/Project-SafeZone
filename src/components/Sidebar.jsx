@@ -10,6 +10,10 @@ import {
   Settings,
   LogOut,
   X,
+  Phone,
+  Ambulance,
+  Flame,
+  BadgeCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -133,7 +137,7 @@ export default function Sidebar({
 
           {/* Sidebar Footer */}
           <div className="p-4 border-t">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 justify-center mt-auto mb-auto">
               <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-blue-600" />
               </div>
@@ -142,6 +146,39 @@ export default function Sidebar({
                 <div className="text-xs text-gray-500">
                   abeba.kebede@example.com
                 </div>
+              </div>
+            </div>
+            <div className="mt-3 p-4 border-t">
+              <div>
+                <div className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                  <Phone className="w-3 h-3 inline-block mr-1" />
+                  Emergency Contacts
+                </div>
+                <ul className="text-xs text-gray-600 space-y-1">
+                  <li className="flex items-center gap-2">
+                    <BadgeCheck className="w-4 h-4 text-blue-500" />
+                    <span className="font-medium text-gray-800">Police:</span>
+                    <a href="tel:991" className="text-blue-600 hover:underline">
+                      991
+                    </a>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Ambulance className="w-4 h-4 text-red-500" />
+                    <span className="font-medium text-gray-800">
+                      Ambulance:
+                    </span>
+                    <a href="tel:907" className="text-blue-600 hover:underline">
+                      907
+                    </a>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Flame className="w-4 h-4 text-orange-500" />
+                    <span className="font-medium text-gray-800">Fire:</span>
+                    <a href="tel:939" className="text-blue-600 hover:underline">
+                      939
+                    </a>
+                  </li>
+                </ul>
               </div>
             </div>
             <div className="mt-3 pt-3 border-t">
