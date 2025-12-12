@@ -26,33 +26,15 @@ export function LoginForm({ className, ...props }) {
     setLoading(true);
     try {
       await login(email, password);
-      toast("Login successful", {
-        description: (
-          <span className="flex items-center gap-2">
-            <svg
-              className="w-4 h-4 text-green-500 font-bold"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            <span className="font-bold">Welcome back!</span>
-          </span>
-        ),
+      toast.success("Login successful", {
+        description: <span>Welcome back!</span>,
       });
       setTimeout(() => {
         navigate("/userdashboard");
       }, 1600);
     } catch (err) {
-      toast("Login failed", {
-        description: err?.message || "Invalid credentials",
-        variant: "destructive",
+      toast.error("Login failed", {
+        description: "Invalid email or password. Please try again.",
       });
     } finally {
       setLoading(false);
