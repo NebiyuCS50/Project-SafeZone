@@ -46,7 +46,7 @@ export function SignupForm({ className, ...props }) {
       );
       console.log("User signed up successfully");
 
-      toast("Account created", {
+      toast.success("Account created", {
         description: (
           <span className="flex items-center gap-2">
             <svg
@@ -62,7 +62,7 @@ export function SignupForm({ className, ...props }) {
                 d="M5 13l4 4L19 7"
               />
             </svg>
-            <span className="font-bold">You can now sign in.</span>
+            <span>You can now sign in.</span>
           </span>
         ),
       });
