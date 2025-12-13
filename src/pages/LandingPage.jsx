@@ -154,9 +154,20 @@ export default function Home() {
             <div className="flex items-center space-x-2">
               <Shield className="w-8 h-8 text-blue-600" />
               <h1 className="text-2xl font-bold text-gray-900">SafeRoute</h1>
-              <Badge variant="secondary" className="hidden sm:inline-flex">
-                Addis Ababa
-              </Badge>
+              <div className="flex items-center space-x-2  lg:flex">
+                <span className="text-lg font-semibold">
+                  {" "}
+                  <sup>
+                    <Badge variant="secondary" className="ml-1">
+                      Addis Ababa
+                      <span className="relative flex h-2 w-2 ml-1">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                      </span>
+                    </Badge>
+                  </sup>
+                </span>
+              </div>
             </div>
 
             {/* Desktop Navigation */}
