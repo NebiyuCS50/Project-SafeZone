@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { auth } from "@/firebase/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-
+import "@/firebase/firebase";
 import {
   Card,
   CardContent,
@@ -42,6 +42,9 @@ import {
   Phone,
   MessageSquare,
 } from "lucide-react";
+import { isSessionExpired } from "@/firebase/auth/emailAuth";
+import { db } from "@/firebase/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function Home() {
   useEffect(() => {
@@ -198,7 +201,30 @@ export default function Home() {
               >
                 Contact
               </Button>
-              <Button onClick={() => navigate("/login")}>
+              <Button
+                onClick={async () => {
+                  if (
+                    !isSessionExpired() &&
+                    localStorage.getItem("lastLoginTimestamp")
+                  ) {
+                    const user = auth.currentUser;
+                    if (user) {
+                      const userDocRef = doc(db, "users", user.uid);
+                      const userDocSnap = await getDoc(userDocRef);
+                      const role = userDocSnap.data()?.role;
+                      if (role === "admin") {
+                        navigate("/admin-dashboard");
+                      } else {
+                        navigate("/userdashboard");
+                      }
+                    } else {
+                      navigate("/userdashboard");
+                    }
+                  } else {
+                    navigate("/login");
+                  }
+                }}
+              >
                 <User className="w-4 h-4 mr-2" />
                 Sign In
               </Button>
@@ -263,7 +289,30 @@ export default function Home() {
                 >
                   Contact
                 </Button>
-                <Button onClick={() => navigate("/login")}>
+                <Button
+                  onClick={async () => {
+                    if (
+                      !isSessionExpired() &&
+                      localStorage.getItem("lastLoginTimestamp")
+                    ) {
+                      const user = auth.currentUser;
+                      if (user) {
+                        const userDocRef = doc(db, "users", user.uid);
+                        const userDocSnap = await getDoc(userDocRef);
+                        const role = userDocSnap.data()?.role;
+                        if (role === "admin") {
+                          navigate("/admin-dashboard");
+                        } else {
+                          navigate("/userdashboard");
+                        }
+                      } else {
+                        navigate("/userdashboard");
+                      }
+                    } else {
+                      navigate("/login");
+                    }
+                  }}
+                >
                   <User className="w-4 h-4 mr-2" />
                   Sign In
                 </Button>
@@ -518,7 +567,28 @@ export default function Home() {
                 size="lg"
                 variant="secondary"
                 className="text-lg px-8 py-3"
-                onClick={() => navigate("/login")}
+                onClick={async () => {
+                  if (
+                    !isSessionExpired() &&
+                    localStorage.getItem("lastLoginTimestamp")
+                  ) {
+                    const user = auth.currentUser;
+                    if (user) {
+                      const userDocRef = doc(db, "users", user.uid);
+                      const userDocSnap = await getDoc(userDocRef);
+                      const role = userDocSnap.data()?.role;
+                      if (role === "admin") {
+                        navigate("/admin-dashboard");
+                      } else {
+                        navigate("/userdashboard");
+                      }
+                    } else {
+                      navigate("/userdashboard");
+                    }
+                  } else {
+                    navigate("/login");
+                  }
+                }}
               >
                 <Shield className="w-5 h-5 mr-2" />
                 Go to Dashboard
