@@ -6,7 +6,7 @@ export function RequireAuth({ children }) {
   const { user, loading } = useAuthStore();
 
   if (loading) return <Loading />;
-  if (!user) return <Navigate to="/login" />;
+  if (!user) return <Navigate to="/" />;
 
   return children;
 }
