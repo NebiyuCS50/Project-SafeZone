@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
 import { ReportIncident } from "@/components/ReportIncident";
 import { MapVisualization } from "@/components/MapVisualization";
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("map");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
