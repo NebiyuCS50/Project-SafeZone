@@ -81,7 +81,7 @@ export default function Sidebar({
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2  lg:flex">
                 <span className="text-lg font-semibold">
-                  SafeZone{" "}
+                  {" "}
                   <sup>
                     <Badge variant="secondary" className="ml-1">
                       Addis Ababa

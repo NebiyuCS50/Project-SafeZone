@@ -23,7 +23,7 @@ import {
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
 import { ReportIncident } from "@/components/ReportIncident";
-
+import { MapVisualization } from "@/components/MapVisualization";
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("map");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -66,26 +66,7 @@ export default function Dashboard() {
                 Real-time incident mapping and safe route planning
               </p>
             </div>
-            <Card>
-              <CardContent className="p-0">
-                <div
-                  className="w-full h-96 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg flex items-center justify-center"
-                  style={{ minHeight: "500px" }}
-                >
-                  <div className="text-center">
-                    <Map className="w-16 h-16 text-blue-600 mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      Interactive Map
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                      Real-time incident visualization with Google Maps
-                      integration
-                    </p>
-                    <Badge variant="secondary">Map Integration Ready</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <MapVisualization />
           </div>
         );
       case "report":
@@ -222,7 +203,7 @@ export default function Dashboard() {
               </Button>
               <div className="flex items-center space-x-2">
                 <Shield className="w-6 h-6 text-blue-600" />
-                <span className="text-lg font-semibold">SafeZone</span>
+                <span className="text-lg font-semibold">SafeRoute</span>
               </div>
             </div>
             {/* Breadcrumb (desktop) */}

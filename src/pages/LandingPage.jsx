@@ -109,7 +109,7 @@ export default function Home() {
       name: "Abeba Kebede",
       role: "Resident, Bole",
       content:
-        "SafeZone has transformed how we report and respond to incidents in our neighborhood. I feel much safer knowing help is just a tap away.",
+        "SafeRoute has transformed how we report and respond to incidents in our neighborhood. I feel much safer knowing help is just a tap away.",
       rating: 5,
       avatar: "AK",
     },
@@ -125,7 +125,7 @@ export default function Home() {
       name: "Sara Tadesse",
       role: "Student, Kazanchis",
       content:
-        "As a student who travels daily, SafeZone gives me peace of mind knowing I can check for safety incidents along my route.",
+        "As a student who travels daily, SafeRoute gives me peace of mind knowing I can check for safety incidents along my route.",
       rating: 5,
       avatar: "ST",
     },
@@ -150,7 +150,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Shield className="w-8 h-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-gray-900">SafeZone</h1>
+              <h1 className="text-2xl font-bold text-gray-900">SafeRoute</h1>
               <Badge variant="secondary" className="hidden sm:inline-flex">
                 Addis Ababa
               </Badge>
@@ -365,10 +365,10 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Why Choose SafeZone?
+              Why Choose SafeRoute?
             </h3>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Discover the features that make SafeZone the most trusted safety
+              Discover the features that make SafeRoute the most trusted safety
               platform in Addis Ababa
             </p>
           </div>
@@ -402,7 +402,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              How SafeZone Works
+              How SafeRoute Works
             </h3>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Get started in four simple steps and start making a difference in
@@ -414,7 +414,7 @@ export default function Home() {
               {
                 step: 1,
                 title: "Sign Up",
-                description: "Create your account and join SafeZone community",
+                description: "Create your account and join SafeRoute community",
               },
               {
                 step: 2,
@@ -567,7 +567,7 @@ export default function Home() {
                   <Mail className="w-6 h-6 text-blue-600" />
                 </div>
                 <h4 className="font-semibold mb-2 text-gray-900">Email Us</h4>
-                <p className="text-gray-600">support@safezone.et</p>
+                <p className="text-gray-600">support@SafeRoute.et</p>
               </CardContent>
             </Card>
             <Card className="text-center border-0 shadow-sm">
@@ -590,7 +590,7 @@ export default function Home() {
             <div>
               <div className="flex items-center space-x-2 mb-6">
                 <Shield className="w-8 h-8" />
-                <h3 className="text-xl font-bold">SafeZone</h3>
+                <h3 className="text-xl font-bold">SafeRoute</h3>
               </div>
               <p className="text-gray-400 leading-relaxed">
                 Making Addis Ababa safer through community-powered incident
@@ -654,7 +654,7 @@ export default function Home() {
           </div>
 
           <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
-            <p>© 2024 SafeZone Addis Ababa. All rights reserved.</p>
+            <p>© 2024 SafeRoute Addis Ababa. All rights reserved.</p>
           </div>
         </div>
       </footer>
