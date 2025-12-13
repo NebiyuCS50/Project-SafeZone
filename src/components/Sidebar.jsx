@@ -16,6 +16,8 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import fetchUserData from "@/utils/user";
+import { useEffect, useState } from "react";
 
 const navigation = [
   {
@@ -48,6 +50,16 @@ export default function Sidebar({
   sidebarOpen,
   setSidebarOpen,
 }) {
+  const [userData, setUserData] = useState({ email: "", name: "" });
+
+  useEffect(() => {
+    async function loadUser() {
+      const data = await fetchUserData();
+      setUserData(data);
+    }
+    loadUser();
+  }, []);
+
   const handleSignOut = () => {
     toast.success("Signed Out", {
       description: "You have been successfully signed out.",
@@ -142,10 +154,8 @@ export default function Sidebar({
                 <User className="w-4 h-4 text-blue-600" />
               </div>
               <div className="flex-1">
-                <div className="text-sm font-medium">Abeba Kebede</div>
-                <div className="text-xs text-gray-500">
-                  abeba.kebede@example.com
-                </div>
+                <div className="text-sm font-medium">{userData.name}</div>
+                <div className="text-xs text-gray-500">{userData.email}</div>
               </div>
             </div>
             <div className="mt-3 p-4 border-t">
