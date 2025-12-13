@@ -24,11 +24,13 @@ import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
 import { ReportIncident } from "@/components/ReportIncident";
 import { MapVisualization } from "@/components/MapVisualization";
+import { logout } from "@/firebase/auth/emailAuth";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("map");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const navigate = useNavigate();
   // Breadcrumb navigation
   const getBreadcrumb = () => {
     const path =
@@ -48,10 +50,13 @@ export default function Dashboard() {
     return path;
   };
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await logout();
     toast.success("Signed Out", {
       description: "You have been successfully signed out.",
     });
+
+    navigate("/");
   };
 
   const renderContent = () => {
