@@ -5,6 +5,8 @@ import { IncidentSchema } from "@/validation/IncidentSchema";
 import { Button } from "@/components/ui/button";
 import { IncidentReporting } from "@/firebase/incidentReporting";
 import { auth } from "@/firebase/firebase";
+import CameraCapture from "./CameraCapture";
+import { uploadToImageKit } from "@/utils/uploadToImageKit";
 import {
   Card,
   CardContent,
@@ -43,9 +45,8 @@ const incidentCategories = [
   { value: "other", label: "Other", icon: "⚠️" },
 ];
 
-export function ReportIncident() {
+export function ReportIncident({ setIsCameraActive }) {
   const [isGettingLocation, setIsGettingLocation] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
 
   const getCurrentDateTimeLocal = () => {
     const now = new Date();
@@ -60,6 +61,7 @@ export function ReportIncident() {
   };
   const form = useForm({
     resolver: zodResolver(IncidentSchema),
+    mode: "onSubmit",
     defaultValues: {
       incidentType: "",
       location: { lat: 0, lng: 0 },
@@ -98,27 +100,18 @@ export function ReportIncident() {
     );
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      form.setValue("image", file);
-
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const onSubmit = async (data) => {
     const currentUser = auth.currentUser;
     if (!currentUser) {
       toast.error("You must be logged in to report an incident.");
       return;
     }
+    let imageUrl = null;
     try {
+      if (data.image) {
+        imageUrl = await uploadToImageKit(data.image);
+        console.log("Image uploaded:", imageUrl);
+      }
       await IncidentReporting({
         incidentType: data.incidentType,
         description: data.description,
@@ -126,16 +119,20 @@ export function ReportIncident() {
           lat: data.location.lat,
           lng: data.location.lng,
         },
-        file: data.image,
+        file: imageUrl,
         user: {
           uid: currentUser.uid,
           email: currentUser.email,
         },
       });
       toast.success("Incident reported successfully!");
-      form.reset();
-      setImagePreview(null);
-      form.setValue("timestamp", new Date().toISOString().slice(0, 16));
+      form.reset({
+        incidentType: "",
+        location: { lat: 0, lng: 0 },
+        description: "",
+        timestamp: new Date().toISOString().slice(0, 16),
+        image: null,
+      });
     } catch (error) {
       toast.error("Failed to report incident: " + error.message);
     }
@@ -308,23 +305,11 @@ export function ReportIncident() {
                     Upload Evidence
                   </FormLabel>
                   <FormControl>
-                    <div className="space-y-2">
-                      <Input
-                        type="file"
-                        accept=".jpg,.jpeg,.png"
-                        onChange={handleImageChange}
-                        className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                      />
-                      {imagePreview && (
-                        <div className="mt-2">
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            className="max-h-40 rounded-md border"
-                          />
-                        </div>
-                      )}
-                    </div>
+                    <CameraCapture
+                      value={field.value}
+                      setImage={(img) => field.onChange(img)}
+                      setIsCameraActive={setIsCameraActive}
+                    />
                   </FormControl>
                   <FormDescription>
                     Accept: .jpg, .jpeg, .png (Max size: 5MB)
