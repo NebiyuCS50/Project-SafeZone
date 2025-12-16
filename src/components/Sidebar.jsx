@@ -18,8 +18,6 @@ import {
 import { toast } from "sonner";
 import fetchUserData from "@/utils/user";
 import { useEffect, useState } from "react";
-import { logout } from "@/firebase/auth/emailAuth";
-import { useNavigate } from "react-router-dom";
 
 const navigation = [
   {
@@ -51,29 +49,28 @@ export default function Sidebar({
   onTabChange,
   sidebarOpen,
   setSidebarOpen,
+  moveDown = false,
 }) {
   const [userData, setUserData] = useState({ email: "", name: "" });
-  const navigate = useNavigate();
 
   useEffect(() => {
     async function loadUser() {
       const data = await fetchUserData();
       setUserData(data);
+      console.log(moveDown);
     }
     loadUser();
   }, []);
 
-  const handleNavClick = (tab) => {
-    onTabChange(tab);
-    if (setSidebarOpen) setSidebarOpen(false);
-  };
-  const handleSignOut = async () => {
-    await logout();
+  const handleSignOut = () => {
     toast.success("Signed Out", {
       description: "You have been successfully signed out.",
     });
+  };
 
-    navigate("/");
+  const handleNavClick = (tab) => {
+    onTabChange(tab);
+    if (setSidebarOpen) setSidebarOpen(false);
   };
 
   return (
@@ -91,6 +88,7 @@ export default function Sidebar({
         className={`${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } fixed lg:relative lg:translate-x-0 z-30 w-64 h-full bg-white shadow-lg transition-transform duration-200 ease-in-out`}
+        style={moveDown ? { height: "auto", minHeight: "90vh" } : {}}
       >
         <div className="flex h-full flex-col">
           {/* Sidebar Header */}
