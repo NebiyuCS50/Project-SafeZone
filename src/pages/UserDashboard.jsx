@@ -31,6 +31,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("map");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const [isCameraActive, setIsCameraActive] = useState(false);
   // Breadcrumb navigation
   const getBreadcrumb = () => {
     const path =
@@ -86,7 +87,7 @@ export default function Dashboard() {
                 Help keep Addis Ababa safe by reporting incidents
               </p>
             </div>
-            <ReportIncident />
+            <ReportIncident setIsCameraActive={setIsCameraActive} />
           </div>
         );
       case "reports":
@@ -250,6 +251,7 @@ export default function Dashboard() {
           onTabChange={setActiveTab}
           sidebarOpen={mobileMenuOpen}
           setSidebarOpen={setMobileMenuOpen}
+          moveDown={isCameraActive}
         />
 
         {/* Main Content */}
