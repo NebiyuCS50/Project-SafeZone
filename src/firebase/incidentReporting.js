@@ -2,7 +2,6 @@
 
 import { db } from "@/firebase/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { uploadToImageKit } from "@/utils/uploadToImageKit";
 
 export async function IncidentReporting({
   incidentType,
@@ -13,19 +12,11 @@ export async function IncidentReporting({
 }) {
   if (!user) throw new Error("User must be logged in to report incident");
 
-  let imageUrl = null;
-
-  // 1️⃣ Upload image if provided
-  if (file) {
-    imageUrl = await uploadToImageKit(file);
-  }
-
-  // 2️⃣ Prepare incident object
   const incidentData = {
     incidentType,
     description,
     location, // { lat, lng }
-    imageUrl,
+    imageUrl: file,
     timestamp: Date.now(),
     userId: user.uid,
     userEmail: user.email,
