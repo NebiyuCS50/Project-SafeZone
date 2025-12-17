@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
 import { ReportIncident } from "@/components/ReportIncident";
 import { MapVisualization } from "@/components/MapVisualization";
+import IncidentReportsTable from "@/components/MyReport";
 import { logout } from "@/firebase/auth/emailAuth";
 import { useNavigate } from "react-router-dom";
 
@@ -78,7 +79,7 @@ export default function Dashboard() {
         );
       case "report":
         return (
-          <div className="space-y-6">
+          <div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
                 Report Incident
@@ -97,7 +98,8 @@ export default function Dashboard() {
               <h2 className="text-2xl font-bold text-gray-900">My Reports</h2>
               <p className="text-gray-600">Incidents you have reported</p>
             </div>
-            <Card>
+            <IncidentReportsTable />
+            {/* <Card>
               <CardContent className="text-center py-12">
                 <FileText className="w-16 h-16 text-gray-400 mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -106,9 +108,9 @@ export default function Dashboard() {
                 <p className="text-gray-600 mb-4">
                   List of incidents submitted by the user
                 </p>
-                <Badge variant="outline">Reports Component Ready</Badge>
+                <Badge variant="outline">No Reports</Badge>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         );
       case "alerts":
