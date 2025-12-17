@@ -21,6 +21,7 @@ export async function IncidentReporting({
     userId: user.uid,
     userEmail: user.email,
     createdAt: serverTimestamp(),
+    status: "pending",
   };
 
   // 3️⃣ Save to Firestore
