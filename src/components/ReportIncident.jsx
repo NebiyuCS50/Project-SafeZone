@@ -133,6 +133,7 @@ export function ReportIncident({ setIsCameraActive }) {
         timestamp: new Date().toISOString().slice(0, 16),
         image: null,
       });
+      setIsCameraActive(false);
     } catch (error) {
       toast.error("Failed to report incident: " + error.message);
     }
