@@ -141,7 +141,7 @@ export function ReportIncident({ setIsCameraActive }) {
 
   return (
     <Card className="w-full max-w-4xl mx-auto mt-0 ml-0">
-      <CardHeader className="pb-2 pt-2">
+      <CardHeader className="pb-0 pt-0">
         <CardTitle className="flex items-center gap-2 text-lg">
           <AlertTriangle className="h-5 w-5" />
           Incident Report Form
