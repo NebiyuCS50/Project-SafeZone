@@ -55,7 +55,7 @@ export default function CameraCapture({ value, setImage, setIsCameraActive }) {
       setStream(null);
     }
     setCameraActive(false);
-    if (setIsCameraActive) setIsCameraActive(false);
+    if (setIsCameraActive) setIsCameraActive(true);
   };
 
   const capturePhoto = () => {
