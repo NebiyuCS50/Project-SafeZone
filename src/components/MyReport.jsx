@@ -260,9 +260,8 @@ export default function IncidentReportsTable() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
+                  <TableHead>Report ID</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Description</TableHead>
                   <TableHead>Location</TableHead>
                   <TableHead>Date/Time</TableHead>
                   <TableHead>Status</TableHead>
@@ -298,14 +297,6 @@ export default function IncidentReportsTable() {
                           {INCIDENT_TYPES[report.incidentType]?.label ||
                             report.incidentType}
                         </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div
-                          className="max-w-xs truncate"
-                          title={report.description}
-                        >
-                          {report.description}
-                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -492,13 +483,18 @@ export default function IncidentReportsTable() {
                 <p className="flex items-center gap-1 text-sm mt-1">
                   <MapPin className="h-3 w-3" />
                   {typeof selectedReport?.latitude === "number" &&
-                  typeof selectedReport?.longitude === "number"
-                    ? `${selectedReport.latitude}, ${selectedReport.longitude}`
-                    : selectedReport?.location &&
-                      typeof selectedReport.location.lat === "number" &&
-                      typeof selectedReport.location.lng === "number"
-                    ? `${selectedReport.location.lat}, ${selectedReport.location.lng}`
-                    : "N/A"}
+                  typeof selectedReport?.longitude === "number" ? (
+                    `${selectedReport.latitude}, ${selectedReport.longitude}`
+                  ) : selectedReport?.location &&
+                    typeof selectedReport.location.lat === "number" &&
+                    typeof selectedReport.location.lng === "number" ? (
+                    <span>
+                      lat: {selectedReport.location.lat}, lng:{" "}
+                      {selectedReport.location.lng}
+                    </span>
+                  ) : (
+                    "N/A"
+                  )}
                 </p>
               </div>
 
@@ -511,14 +507,14 @@ export default function IncidentReportsTable() {
                 </p>
               </div>
 
-              {selectedReport.imagePath && (
+              {selectedReport.imageUrl && (
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
                     Evidence
                   </label>
                   <div className="mt-1">
                     <img
-                      src={selectedReport.imagePath}
+                      src={selectedReport.imageUrl}
                       alt="Incident evidence"
                       className="max-w-full h-auto rounded-md border"
                     />
