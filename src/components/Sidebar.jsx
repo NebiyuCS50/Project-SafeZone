@@ -18,6 +18,8 @@ import {
 import { toast } from "sonner";
 import fetchUserData from "@/utils/user";
 import { useEffect, useState } from "react";
+import { logout } from "@/firebase/auth/emailAuth";
+import { useNavigate } from "react-router-dom";
 
 const navigation = [
   {
@@ -52,6 +54,7 @@ export default function Sidebar({
   moveDown = false,
 }) {
   const [userData, setUserData] = useState({ email: "", name: "" });
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function loadUser() {
@@ -62,10 +65,13 @@ export default function Sidebar({
     loadUser();
   }, []);
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await logout();
     toast.success("Signed Out", {
       description: "You have been successfully signed out.",
     });
+
+    navigate("/");
   };
 
   const handleNavClick = (tab) => {
