@@ -35,8 +35,11 @@ import { logout } from "@/firebase/auth/emailAuth";
 import { useNavigate } from "react-router-dom";
 import LiveIncident from "@/components/LiveIncident";
 import { Notification } from "@/components/Notification";
+import { useNearbyLocationGroups } from "@/hooks/useNearbyLocationGroups";
+import UserProfile from "@/components/Profile";
 
 export default function Dashboard() {
+  const notificationCount = useNearbyLocationGroups();
   const [activeTab, setActiveTab] = useState("map");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -128,18 +131,7 @@ export default function Dashboard() {
                 Manage your account settings and preferences
               </p>
             </div>
-            <Card>
-              <CardContent className="text-center py-12">
-                <User className="w-16 h-16 text-gray-400 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  User Profile
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  User profile management and statistics
-                </p>
-                <Badge variant="outline">Profile Component Ready</Badge>
-              </CardContent>
-            </Card>
+            <UserProfile />
           </div>
         );
       case "settings":
@@ -222,6 +214,11 @@ export default function Dashboard() {
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="sm">
                     <Bell className="w-5 h-5" />
+                    {notificationCount > 0 && (
+                      <span className="absolute top-2 right-16 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
+                        {notificationCount}
+                      </span>
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-80 p-0">
