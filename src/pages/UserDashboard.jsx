@@ -27,6 +27,7 @@ import { MapVisualization } from "@/components/MapVisualization";
 import IncidentReportsTable from "@/components/MyReport";
 import { logout } from "@/firebase/auth/emailAuth";
 import { useNavigate } from "react-router-dom";
+import LiveIncident from "@/components/LiveIncident";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("map");
@@ -99,41 +100,16 @@ export default function Dashboard() {
               <p className="text-gray-600">Incidents you have reported</p>
             </div>
             <IncidentReportsTable />
-            {/* <Card>
-              <CardContent className="text-center py-12">
-                <FileText className="w-16 h-16 text-gray-400 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  User Reports
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  List of incidents submitted by the user
-                </p>
-                <Badge variant="outline">No Reports</Badge>
-              </CardContent>
-            </Card> */}
           </div>
         );
       case "alerts":
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Live Alerts</h2>
-              <p className="text-gray-600">
-                Real-time safety alerts and notifications
-              </p>
+              <h2 className="text-2xl font-bold text-gray-900">Live Alert</h2>
+              <p className="text-gray-600">Incidents around you</p>
             </div>
-            <Card>
-              <CardContent className="text-center py-12">
-                <Bell className="w-16 h-16 text-gray-400 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Live Alerts
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Real-time safety alerts and notifications
-                </p>
-                <Badge variant="outline">Alerts Component Ready</Badge>
-              </CardContent>
-            </Card>
+            <LiveIncident />
           </div>
         );
       case "profile":
