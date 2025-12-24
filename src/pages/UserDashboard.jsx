@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
 import { Badge } from "@/components/ui/badge";
 import {
   Shield,
@@ -20,6 +21,11 @@ import {
   User,
   Settings,
 } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
 import { ReportIncident } from "@/components/ReportIncident";
@@ -28,6 +34,7 @@ import IncidentReportsTable from "@/components/MyReport";
 import { logout } from "@/firebase/auth/emailAuth";
 import { useNavigate } from "react-router-dom";
 import LiveIncident from "@/components/LiveIncident";
+import { Notification } from "@/components/Notification";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("map");
@@ -211,9 +218,16 @@ export default function Dashboard() {
               ))}
             </nav>
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm">
-                <Bell className="w-5 h-5" />
-              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <Bell className="w-5 h-5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-80 p-0">
+                  <Notification />
+                </PopoverContent>
+              </Popover>
               <Button variant="ghost" size="sm" onClick={handleSignOut}>
                 <LogOut className="w-5 h-5" />
               </Button>
