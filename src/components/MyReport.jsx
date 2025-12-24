@@ -58,9 +58,34 @@ const STATUSES = {
   resolved: { label: "Resolved", color: "success" },
 };
 
+function groupByTypeAndLocation(reports) {
+  const groups = {};
+  reports.forEach((r) => {
+    const loc =
+      typeof r.latitude === "number" && typeof r.longitude === "number"
+        ? `${r.latitude.toFixed(4)},${r.longitude.toFixed(4)}`
+        : r.location &&
+          typeof r.location.lat === "number" &&
+          typeof r.location.lng === "number"
+        ? `${r.location.lat.toFixed(4)},${r.location.lng.toFixed(4)}`
+        : "N/A";
+    const key = `${r.incidentType}|${loc}`;
+    if (!groups[key]) {
+      groups[key] = { ...r, count: 1, locKey: loc };
+    } else {
+      groups[key].count += 1;
+      // Optionally, update timestamp to the latest
+      if (r.timestamp > groups[key].timestamp) {
+        groups[key].timestamp = r.timestamp;
+      }
+    }
+  });
+  return Object.values(groups);
+}
+
 export default function IncidentReportsTable() {
   const [allReports, setAllReports] = useState([]);
-  const [reports, setReports] = useState([]);
+  const [groupedReports, setGroupedReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -78,11 +103,11 @@ export default function IncidentReportsTable() {
     fetchAllReports()
       .then((data) => {
         setAllReports(data);
-        console.log("All reports", data);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
+
   useEffect(() => {
     let filtered = allReports;
 
@@ -98,20 +123,21 @@ export default function IncidentReportsTable() {
       filtered = filtered.filter((r) => r.status === filterStatus);
     }
 
-    setTotalReports(filtered.length);
-    setTotalPages(Math.max(1, Math.ceil(filtered.length / itemsPerPage)));
+    // Group by type and location
+    const grouped = groupByTypeAndLocation(filtered);
 
-    // Ensure currentPage is not out of bounds
+    setTotalReports(grouped.length);
+    setTotalPages(Math.max(1, Math.ceil(grouped.length / itemsPerPage)));
+
     const safePage = Math.min(
       currentPage,
-      Math.max(1, Math.ceil(filtered.length / itemsPerPage))
+      Math.max(1, Math.ceil(grouped.length / itemsPerPage))
     );
     setCurrentPage(safePage);
 
     const startIdx = (safePage - 1) * itemsPerPage;
     const endIdx = startIdx + itemsPerPage;
-    console.log("Displayed reports:", filtered.slice(startIdx, endIdx));
-    setReports(filtered.slice(startIdx, endIdx));
+    setGroupedReports(grouped.slice(startIdx, endIdx));
   }, [allReports, searchTerm, filterType, filterStatus, currentPage]);
 
   const handleSearch = (value) => {
@@ -174,7 +200,7 @@ export default function IncidentReportsTable() {
     return items;
   };
 
-  if (loading && reports.length === 0) {
+  if (loading && groupedReports.length === 0) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
@@ -265,11 +291,12 @@ export default function IncidentReportsTable() {
                   <TableHead>Location</TableHead>
                   <TableHead>Date/Time</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Count</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {reports.length === 0 ? (
+                {groupedReports.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8">
                       <div className="text-muted-foreground">
@@ -282,7 +309,7 @@ export default function IncidentReportsTable() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  reports.map((report) => (
+                  groupedReports.map((report) => (
                     <TableRow key={report.id} className="hover:bg-muted/50">
                       <TableCell className="font-mono text-xs">
                         #{report.id.slice(-8)}
@@ -332,6 +359,10 @@ export default function IncidentReportsTable() {
                         >
                           {STATUSES[report.status]?.label || report.status}
                         </Badge>
+                      </TableCell>
+
+                      <TableCell>
+                        <Badge variant="outline">{report.count}</Badge>
                       </TableCell>
                       <TableCell>
                         <Button
