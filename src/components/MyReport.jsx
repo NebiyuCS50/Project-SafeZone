@@ -46,7 +46,7 @@ import { fetchAllReports } from "@/utils/user";
 
 const INCIDENT_TYPES = {
   accident: { label: "Accident", color: "destructive" },
-  traffic: { label: "Traffic Issue", color: "warning" },
+  traffic: { label: "Traffic Issue", color: "destructive" },
   crime: { label: "Crime/Suspicious", color: "destructive" },
   fire: { label: "Fire/Hazard", color: "destructive" },
   medical: { label: "Medical Emergency", color: "destructive" },
