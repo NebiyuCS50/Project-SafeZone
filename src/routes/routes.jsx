@@ -5,6 +5,7 @@ import AuthListener from "@/App";
 import AdminDashboard from "@/pages/AdminDashboard";
 
 import UserDashboard from "@/pages/UserDashboard";
+import NotFound from "@/pages/NotFound";
 
 import { RequireAdmin } from "@/components/auth/requireAdmin";
 import { RequireAuth } from "@/components/auth/requireLogin";
@@ -56,11 +57,7 @@ const routes = [
   },
   {
     path: "*",
-    element: (
-      <AdminDashboard>
-        <LandingPage />
-      </AdminDashboard>
-    ),
+    element: <NotFound />,
   },
 ];
 
