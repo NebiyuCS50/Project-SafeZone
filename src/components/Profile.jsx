@@ -67,7 +67,7 @@ export default function UserProfile() {
   const [user, setUser] = useState(null);
   const [userReports, setUserReports] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editForm, setEditForm] = useState({ name: "" });
+  // const [editForm, setEditForm] = useState({ name: "" });
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [passwordForm, setPasswordForm] = useState({
@@ -85,7 +85,7 @@ export default function UserProfile() {
     try {
       const userData = await fetchUserData();
       setUser(userData);
-      setEditForm({ name: userData.name || "" });
+      // setEditForm({ name: userData.name || "" });
 
       const allReports = await fetchAllReports();
 
@@ -126,7 +126,7 @@ export default function UserProfile() {
   const getTrustScore = () => {
     const total = userReports.length;
     if (total === 0) return 0;
-    const verified = userReports.filter((r) => r.status === "verified").length;
+    const verified = userReports.filter((r) => r.status === "Resolved").length;
     const pending = userReports.filter((r) => r.status === "pending").length;
     return ((verified + 0.5 * pending) / total) * 5;
   };
@@ -188,7 +188,7 @@ export default function UserProfile() {
   const trustScore = getTrustScore();
   const totalReports = userReports.length;
   const verifiedReports = userReports.filter(
-    (r) => r.status === "verified"
+    (r) => r.status === "Resolved"
   ).length;
   const pendingReports = userReports.filter(
     (r) => r.status === "pending"
