@@ -45,12 +45,12 @@ const STATUSES = {
 };
 
 // Group reports by location (rounded to 4 decimals)
-function groupReportsByLocation(reports) {
+function groupReportsByLocationAndType(reports) {
   const groups = {};
   reports.forEach((r) => {
     const loc = r.location || { lat: r.latitude, lng: r.longitude };
     if (typeof loc.lat !== "number" || typeof loc.lng !== "number") return;
-    const key = `${loc.lat.toFixed(4)},${loc.lng.toFixed(4)}`;
+    const key = `${loc.lat.toFixed(4)},${loc.lng.toFixed(4)}|${r.incidentType}`;
     if (!groups[key]) groups[key] = [];
     groups[key].push(r);
   });
@@ -78,24 +78,28 @@ export default function LiveIncident() {
   }, []);
 
   // Group and filter reports
-  const locationGroups = groupReportsByLocation(allReports);
-  let groupedRows = Object.entries(locationGroups).map(([locKey, group]) => {
-    // Determine alert level for this location
-    let level = "none";
-    if (group.length >= 7) level = "high";
-    else if (group.length >= 2) level = "medium";
-    else if (group.length >= 1) level = "low";
-    // Use the first report for display info
-    const first = group[0];
-    return {
-      locKey,
-      count: group.length,
-      alertLevel: level,
-      incidentType: first.incidentType,
-      status: first.status,
-      timestamp: first.timestamp,
-    };
-  });
+  const locationGroups = groupReportsByLocationAndType(allReports);
+  let groupedRows = Object.entries(locationGroups).map(
+    ([locTypeKey, group]) => {
+      // Determine alert level for this location/type group
+      let level = "none";
+      if (group.length >= 7) level = "high";
+      else if (group.length >= 2) level = "medium";
+      else if (group.length >= 1) level = "low";
+      // Use the first report for display info
+      const first = group[0];
+      // Split locTypeKey to get location and type
+      const [locationKey, incidentType] = locTypeKey.split("|");
+      return {
+        locKey: locationKey,
+        incidentType,
+        count: group.length,
+        alertLevel: level,
+        status: first.status,
+        timestamp: first.timestamp,
+      };
+    }
+  );
 
   // Apply search and filters
   if (searchTerm) {
