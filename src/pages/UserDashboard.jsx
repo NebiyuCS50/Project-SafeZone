@@ -27,23 +27,22 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "sonner";
-import Sidebar from "@/components/Sidebar";
-import { ReportIncident } from "@/components/ReportIncident";
-import { MapVisualization } from "@/components/MapVisualization";
-import IncidentReportsTable from "@/components/MyReport";
+import Sidebar from "@/components/user/Sidebar";
+import { ReportIncident } from "@/components/user/ReportIncident";
+import { MapVisualization } from "@/components/user/MapVisualization";
+import IncidentReportsTable from "@/components/user/MyReport";
 import { logout } from "@/firebase/auth/emailAuth";
 import { useNavigate } from "react-router-dom";
-import LiveIncident from "@/components/LiveIncident";
-import { Notification } from "@/components/Notification";
-import { useNearbyLocationGroups } from "@/hooks/useNearbyLocationGroups";
-import UserProfile from "@/components/Profile";
+import LiveIncident from "@/components/user/LiveIncident";
+import { Notification } from "@/components/user/Notification";
+import UserProfile from "@/components/user/Profile";
 
 export default function Dashboard() {
-  const notificationCount = useNearbyLocationGroups();
   const [activeTab, setActiveTab] = useState("map");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   // Breadcrumb navigation
   const getBreadcrumb = () => {
     const path =
@@ -222,7 +221,7 @@ export default function Dashboard() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-80 p-0">
-                  <Notification />
+                  <Notification onCountChange={setNotificationCount} />
                 </PopoverContent>
               </Popover>
               <Button variant="ghost" size="sm" onClick={handleSignOut}>
