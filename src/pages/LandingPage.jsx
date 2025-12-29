@@ -224,7 +224,7 @@ export default function Home() {
                       const userDocSnap = await getDoc(userDocRef);
                       const role = userDocSnap.data()?.role;
                       if (role === "admin") {
-                        navigate("/admin-dashboard");
+                        navigate("/admin/dashboard");
                       } else {
                         navigate("/userdashboard");
                       }
@@ -312,7 +312,7 @@ export default function Home() {
                         const userDocSnap = await getDoc(userDocRef);
                         const role = userDocSnap.data()?.role;
                         if (role === "admin") {
-                          navigate("/admin-dashboard");
+                          navigate("/admin/dashboard");
                         } else {
                           navigate("/userdashboard");
                         }
