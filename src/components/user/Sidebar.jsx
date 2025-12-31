@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Shield,
   Map,
   Plus,
   FileText,
@@ -19,7 +18,6 @@ import fetchUserData from "@/utils/user";
 import { useEffect, useState } from "react";
 import { logout } from "@/firebase/auth/emailAuth";
 import { useNavigate } from "react-router-dom";
-import UserProfile from "./Profile";
 
 const navigation = [
   {
@@ -123,7 +121,7 @@ export default function Sidebar({
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
+          <nav className="flex flex-col p-4 space-y-6 overflow-y-auto">
             {navigation.map((section) => (
               <div key={section.title}>
                 <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
