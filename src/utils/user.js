@@ -25,3 +25,23 @@ export async function fetchAllReports() {
   });
   return reports;
 }
+
+export async function countActiveUsers() {
+  const usersSnapshot = await getDocs(collection(db, "users"));
+  const now = Date.now();
+  const oneDayAgo = now - 24 * 60 * 60 * 1000;
+  let activeCount = 0;
+
+  usersSnapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    let lastActiveMs = 0;
+    if (data.lastActive?.toDate) {
+      lastActiveMs = data.lastActive.toDate().getTime();
+    } else if (typeof data.lastActive === "string") {
+      lastActiveMs = new Date(data.lastActive).getTime();
+    }
+    if (lastActiveMs >= oneDayAgo) activeCount++;
+  });
+
+  return activeCount;
+}
