@@ -79,10 +79,9 @@ export default function AdminDashboard() {
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-1">
-                <ShieldUser size={32} />
                 Admin Dashboard
               </h2>
-              <p className="text-gray-600 ml-8">
+              <p className="text-gray-600">
                 Overview of safety incidents in Addis Ababa
               </p>
             </div>
