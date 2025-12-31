@@ -58,6 +58,7 @@ const INCIDENT_TYPES = {
 const STATUSES = {
   pending: { label: "Pending", color: "secondary" },
   resolved: { label: "Resolved", color: "success" },
+  rejected: { label: "Rejected", color: "destructive" },
 };
 
 function groupByTypeAndLocation(reports) {
