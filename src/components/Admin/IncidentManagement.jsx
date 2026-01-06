@@ -435,30 +435,34 @@ export default function IncidentManagement() {
         {/* Incidents Table */}
         <Card>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto relative">
               {loading && (
-                <div className="mb-4 flex items-center gap-2 text-blue-600 font-semibold">
-                  <svg
-                    className="animate-spin h-5 w-5 text-blue-600"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                    ></path>
-                  </svg>
-                  Updating status...
+                <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-10">
+                  <div className="flex flex-col items-center">
+                    <svg
+                      className="animate-spin h-8 w-8 text-blue-600 mb-2"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                      ></path>
+                    </svg>
+                    <span className="text-blue-600 font-semibold">
+                      Updating status...
+                    </span>
+                  </div>
                 </div>
               )}
               {error && (
