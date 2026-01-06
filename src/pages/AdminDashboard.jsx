@@ -1,32 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 import { Badge } from "@/components/ui/badge";
-import {
-  Shield,
-  Menu,
-  Bell,
-  LogOut,
-  ChevronRight,
-  Map,
-  Plus,
-  FileText,
-  User,
-  Settings,
-  ShieldUser,
-} from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Shield, Menu, LogOut, ChevronRight, Settings } from "lucide-react";
+
 import { toast } from "sonner";
 import AdminSidebar from "@/components/Admin/AdminSidebar";
 import { ReportIncident } from "@/components/user/ReportIncident";
@@ -35,22 +13,21 @@ import IncidentReportsTable from "@/components/user/MyReport";
 import { logout } from "@/firebase/auth/emailAuth";
 import { useNavigate } from "react-router-dom";
 import LiveIncident from "@/components/user/LiveIncident";
-import { Notification } from "@/components/user/Notification";
 import UserProfile from "@/components/user/Profile";
+import IncidentManagement from "@/components/Admin/IncidentManagement";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("Admin Overview");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const [isCameraActive, setIsCameraActive] = useState(false);
 
   // Breadcrumb navigation
   const getBreadcrumb = () => {
     const path =
       activeTab === "Admin Overview"
         ? ["Dashboard", "Admin Overview"]
-        : activeTab === "report"
-        ? ["Dashboard", "Incidents", "Report Incident"]
+        : activeTab === "Incident Management"
+        ? ["Dashboard", "Incidents", "Incident Management"]
         : activeTab === "reports"
         ? ["Dashboard", "Incidents", "My Reports"]
         : activeTab === "alerts"
@@ -88,18 +65,16 @@ export default function AdminDashboard() {
             <AdminOverview />
           </div>
         );
-      case "report":
+      case "Incident Management":
         return (
           <div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
-                Report Incident
+                Incident Management
               </h2>
-              <p className="text-gray-600">
-                Help keep Addis Ababa safe by reporting incidents
-              </p>
+              <p className="text-gray-600">Manage City Safety Incidents</p>
             </div>
-            <ReportIncident setIsCameraActive={setIsCameraActive} />
+            <IncidentManagement />
           </div>
         );
       case "reports":
@@ -225,7 +200,6 @@ export default function AdminDashboard() {
           onTabChange={setActiveTab}
           sidebarOpen={mobileMenuOpen}
           setSidebarOpen={setMobileMenuOpen}
-          moveDown={isCameraActive}
         />
 
         {/* Main Content */}
