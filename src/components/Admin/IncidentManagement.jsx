@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
@@ -43,42 +43,85 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
   Filter,
-  Calendar,
+  Calendar as CalendarIcon,
   MapPin,
   CheckCircle,
   XCircle,
   Clock,
   AlertTriangle,
+  Flame,
+  Car,
+  Users,
   Eye,
   Trash2,
+  Image as ImageIcon,
   TrendingUp,
   Search,
   ChevronDown,
 } from "lucide-react";
 import { fetchAllReports } from "@/utils/user";
 import { format } from "date-fns";
+import { updateIncidentStatus } from "@/firebase/incidentReporting";
+import { deleteIncident } from "@/firebase/incidentReporting";
+
+const INCIDENT_TYPES = {
+  accident: { label: "Accident", icon: "🚗", color: "destructive" },
+  traffic: { label: "Traffic Issue", icon: "🚦", color: "destructive" },
+  crime: { label: "Crime/Suspicious", icon: "🚨", color: "destructive" },
+  fire: { label: "Fire/Hazard", icon: "🔥", color: "destructive" },
+  medical: { label: "Medical Emergency", icon: "🩺", color: "destructive" },
+  natural: { label: "Natural Disaster", icon: "🌪️", color: "destructive" },
+  other: { label: "Other", icon: "❓", color: "secondary" },
+};
 
 const statusColors = {
-  Resolved: "bg-green-100 text-green-800 border-green-200",
-  Rejected: "bg-red-100 text-red-800 border-red-200",
   pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  resolved: "bg-green-100 text-green-800 border-green-200",
+  rejected: "bg-red-100 text-red-800 border-red-200",
 };
 
 const statusIcons = {
-  Resolved: CheckCircle,
-  Rejected: XCircle,
   pending: Clock,
+  resolved: CheckCircle,
+  rejected: XCircle,
 };
-const INCIDENT_TYPES = {
-  accident: { label: " Accident", icon: "🚗", color: "destructive" },
-  traffic: { label: " Traffic Issue", icon: "🚦", color: "destructive" },
-  crime: { label: " Crime/Suspicious", icon: "🚨", color: "destructive" },
-  fire: { label: " Fire/Hazard", icon: "🔥", color: "destructive" },
-  medical: { label: " Medical Emergency", icon: "🩺", color: "destructive" },
-  disaster: { label: " Natural Disaster", icon: "🌪️", color: "destructive" },
-  other: { label: "❓ Other", color: "secondary" },
-};
+
+function groupByTypeAndLocation(reports) {
+  const groups = {};
+  reports.forEach((r) => {
+    const loc =
+      typeof r.latitude === "number" && typeof r.longitude === "number"
+        ? `${r.latitude.toFixed(4)},${r.longitude.toFixed(4)}`
+        : r.location &&
+          typeof r.location.lat === "number" &&
+          typeof r.location.lng === "number"
+        ? `${r.location.lat.toFixed(4)},${r.location.lng.toFixed(4)}`
+        : "N/A";
+    const key = `${r.incidentType || r.type}|${loc}`;
+    if (!groups[key]) {
+      groups[key] = { ...r, count: 1, locKey: loc };
+    } else {
+      groups[key].count += 1;
+      // If this incident is newer, replace the group object with this one (but keep count and locKey)
+      const currentTimestamp = groups[key].timestamp || groups[key].date;
+      const newTimestamp = r.timestamp || r.date;
+      if (newTimestamp > currentTimestamp) {
+        groups[key] = { ...r, count: groups[key].count, locKey: loc };
+      }
+    }
+  });
+  return Object.values(groups);
+}
 
 export default function IncidentManagement() {
   const [incidents, setIncidents] = useState([]);
@@ -90,23 +133,15 @@ export default function IncidentManagement() {
   const [filters, setFilters] = useState({
     status: [],
     type: [],
-    dateRange: { from: null, to: null },
-    location: "",
     search: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     async function loadIncidents() {
       const reports = await fetchAllReports();
-      const normalized = reports.map((r) => ({
-        ...r,
-        date: r.date
-          ? r.date.toDate
-            ? r.date.toDate()
-            : new Date(r.date)
-          : null,
-      }));
-      setIncidents(normalized);
+      setIncidents(reports);
     }
     loadIncidents();
   }, []);
@@ -125,19 +160,7 @@ export default function IncidentManagement() {
     // Type filter
     if (filters.type.length > 0) {
       filtered = filtered.filter((incident) =>
-        filters.type.includes(incident.type)
-      );
-    }
-
-    // Date range filter
-    if (filters.dateRange.from) {
-      filtered = filtered.filter(
-        (incident) => incident.date >= filters.dateRange.from
-      );
-    }
-    if (filters.dateRange.to) {
-      filtered = filtered.filter(
-        (incident) => incident.date <= filters.dateRange.to
+        filters.type.includes(incident.incidentType)
       );
     }
 
@@ -146,18 +169,12 @@ export default function IncidentManagement() {
       const searchLower = filters.search.toLowerCase();
       filtered = filtered.filter(
         (incident) =>
-          (incident.incidentType &&
-            incident.incidentType.toLowerCase().includes(searchLower)) ||
-          (incident.type &&
-            incident.type.toLowerCase().includes(searchLower)) ||
-          (incident.title &&
-            incident.title.toLowerCase().includes(searchLower)) ||
-          (incident.description &&
-            incident.description.toLowerCase().includes(searchLower)) ||
-          (incident.reportedBy &&
-            incident.reportedBy.toLowerCase().includes(searchLower))
+          incident.incidentType.toLowerCase().includes(searchLower) ||
+          incident.description.toLowerCase().includes(searchLower) ||
+          incident.userEmail.toLowerCase().includes(searchLower)
       );
     }
+    filtered = groupByTypeAndLocation(filtered);
     setFilteredIncidents(filtered);
   };
 
@@ -191,21 +208,74 @@ export default function IncidentManagement() {
     setCurrentPage(1); // Reset to first page when changing items per page
   };
 
-  const handleStatusChange = (incidentId, newStatus) => {
-    setIncidents((prev) =>
-      prev.map((incident) =>
-        incident.id === incidentId
-          ? { ...incident, status: newStatus }
-          : incident
-      )
-    );
+  const handleStatusChange = async (incidentId, newStatus) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const incident = filteredIncidents.find((i) => i.id === incidentId);
+      if (!incident) return;
+
+      const groupType = incident.incidentType || incident.type;
+      const groupLoc = incident.locKey;
+
+      // Find all matching incidents in the original array
+      const toUpdate = incidents.filter((i) => {
+        const loc =
+          typeof i.latitude === "number" && typeof i.longitude === "number"
+            ? `${i.latitude.toFixed(4)},${i.longitude.toFixed(4)}`
+            : i.location &&
+              typeof i.location.lat === "number" &&
+              typeof i.location.lng === "number"
+            ? `${i.location.lat.toFixed(4)},${i.location.lng.toFixed(4)}`
+            : "N/A";
+        const key = `${i.incidentType || i.type}|${loc}`;
+        return key === `${groupType}|${groupLoc}`;
+      });
+
+      // Update Firestore for each incident
+      await Promise.all(
+        toUpdate.map((i) => updateIncidentStatus(i.id, newStatus))
+      );
+
+      // Update local state
+      setIncidents((prev) =>
+        prev.map((i) => {
+          const loc =
+            typeof i.latitude === "number" && typeof i.longitude === "number"
+              ? `${i.latitude.toFixed(4)},${i.longitude.toFixed(4)}`
+              : i.location &&
+                typeof i.location.lat === "number" &&
+                typeof i.location.lng === "number"
+              ? `${i.location.lat.toFixed(4)},${i.location.lng.toFixed(4)}`
+              : "N/A";
+          const key = `${i.incidentType || i.type}|${loc}`;
+          if (key === `${groupType}|${groupLoc}`) {
+            return { ...i, status: newStatus };
+          }
+          return i;
+        })
+      );
+    } catch (err) {
+      setError(err.message || "Failed to update incident status.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeleteIncident = (incidentId) => {
-    setIncidents((prev) =>
-      prev.filter((incident) => incident.id !== incidentId)
-    );
-    setSelectedIncident(null);
+  const handleDeleteIncident = async (incidentId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await deleteIncident(incidentId); // Delete from Firestore
+      setIncidents((prev) =>
+        prev.filter((incident) => incident.id !== incidentId)
+      );
+      setSelectedIncident(null);
+    } catch (err) {
+      setError(err.message || "Failed to delete incident.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getConfidenceColor = (confidence) => {
@@ -238,7 +308,7 @@ export default function IncidentManagement() {
                 <div>
                   <p className="text-sm text-gray-600">Resolved</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {incidents.filter((i) => i.status === "Resolved").length}
+                    {incidents.filter((i) => i.status === "resolved").length}
                   </p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-green-600" />
@@ -264,7 +334,7 @@ export default function IncidentManagement() {
                 <div>
                   <p className="text-sm text-gray-600">Rejected</p>
                   <p className="text-2xl font-bold text-red-600">
-                    {incidents.filter((i) => i.status === "Rejected").length}
+                    {incidents.filter((i) => i.status === "rejected").length}
                   </p>
                 </div>
                 <XCircle className="h-8 w-8 text-red-600" />
@@ -328,9 +398,9 @@ export default function IncidentManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="Resolved">Resolved</SelectItem>
+                    <SelectItem value="resolved">Resolved</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="Rejected">Rejected</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -349,97 +419,16 @@ export default function IncidentManagement() {
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
                     <SelectItem value="accident">Accident</SelectItem>
-                    <SelectItem value="fire">Fire</SelectItem>
-                    <SelectItem value="traffic">Traffic</SelectItem>
-                    <SelectItem value="crowding">Crowding</SelectItem>
+                    <SelectItem value="traffic">Traffic Issue</SelectItem>
+                    <SelectItem value="crime">Crime/Suspicious</SelectItem>
+                    <SelectItem value="fire">Fire/Hazard</SelectItem>
+                    <SelectItem value="medical">Medical Emergency</SelectItem>
+                    <SelectItem value="natural">Natural Disaster</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
-
-            {/* Advanced Filters */}
-            {showFilters && (
-              <div className="border-t pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium mb-2 block">
-                      Date Range
-                    </Label>
-                    <div className="flex gap-2">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="flex-1 justify-start text-left font-normal"
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {filters.dateRange.from
-                              ? filters.dateRange.from.toLocaleDateString()
-                              : "Start date"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={filters.dateRange.from}
-                            onSelect={(date) =>
-                              setFilters((prev) => ({
-                                ...prev,
-                                dateRange: { ...prev.dateRange, from: date },
-                              }))
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="flex-1 justify-start text-left font-normal"
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {filters.dateRange.to
-                              ? filters.dateRange.to.toLocaleDateString()
-                              : "End date"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={filters.dateRange.to}
-                            onSelect={(date) =>
-                              setFilters((prev) => ({
-                                ...prev,
-                                dateRange: { ...prev.dateRange, to: date },
-                              }))
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                  <div className="flex items-end">
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() =>
-                        setFilters({
-                          status: [],
-                          type: [],
-                          dateRange: { from: null, to: null },
-                          location: "",
-                          search: "",
-                        })
-                      }
-                    >
-                      Clear All Filters
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 
@@ -447,6 +436,34 @@ export default function IncidentManagement() {
         <Card>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
+              {loading && (
+                <div className="mb-4 flex items-center gap-2 text-blue-600 font-semibold">
+                  <svg
+                    className="animate-spin h-5 w-5 text-blue-600"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    ></path>
+                  </svg>
+                  Updating status...
+                </div>
+              )}
+              {error && (
+                <div className="mb-4 text-red-600 font-semibold">{error}</div>
+              )}
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -455,318 +472,305 @@ export default function IncidentManagement() {
                     <TableHead>Status</TableHead>
                     <TableHead>Location</TableHead>
                     <TableHead>Date</TableHead>
+                    <TableHead>Count</TableHead>
                     <TableHead>Reporter</TableHead>
                     <TableHead>AI Confidence</TableHead>
+
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
-                  {filteredIncidents.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={9} className="text-center py-8">
-                        <p className="text-gray-500">
-                          No incidents found matching your filters.
-                        </p>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    paginatedIncidents.map((incident) => {
-                      const StatusIcon = statusIcons[incident.status];
+                {filteredIncidents.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center py-8">
+                      <p className="text-gray-500">
+                        No incidents found matching your filters.
+                      </p>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paginatedIncidents.map((incident) => {
+                    const StatusIcon = statusIcons[incident.status] || null;
 
-                      return (
-                        <TableRow
-                          key={incident.id}
-                          className="hover:bg-gray-50"
-                        >
-                          <TableCell>
-                            <div className="flex items-center justify-center">
-                              <span className="text-xl">
-                                {INCIDENT_TYPES[incident.incidentType]?.icon ||
-                                  "❓"}
-                              </span>
+                    return (
+                      <TableRow key={incident.id} className="hover:bg-gray-50">
+                        <TableCell>
+                          <div className="flex items-center justify-center">
+                            {INCIDENT_TYPES[incident.incidentType]?.icon ||
+                              "❓"}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">
+                              {incident.incidentType}
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">
-                                {INCIDENT_TYPES[incident.incidentType]?.label ||
-                                  incident.incidentType}
-                              </div>
-                              <div className="text-sm text-gray-500 truncate max-w-xs">
-                                {incident.description}
-                              </div>
+                            <div className="text-sm text-gray-500 truncate max-w-xs">
+                              {incident.description}
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={statusColors[incident.status]}>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={
+                              statusColors[incident.status] ||
+                              "bg-gray-100 text-gray-800"
+                            }
+                          >
+                            {StatusIcon && (
                               <StatusIcon className="h-3 w-3 mr-1" />
-                              {incident.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <MapPin className="h-3 w-3" />
-                              {typeof incident.latitude === "number" &&
-                              typeof incident.longitude === "number"
-                                ? `${incident.latitude.toFixed(
-                                    4
-                                  )}, ${incident.longitude.toFixed(4)}`
-                                : incident.location &&
-                                  typeof incident.location.lat === "number" &&
-                                  typeof incident.location.lng === "number"
-                                ? `${incident.location.lat.toFixed(
-                                    4
-                                  )}, ${incident.location.lng.toFixed(4)}`
-                                : "N/A"}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-sm">
-                            <div className="flex items-center gap-1 text-xs">
-                              <Calendar className="h-3 w-3" />
-                              {incident.timestamp
-                                ? (() => {
-                                    const d = new Date(incident.timestamp);
-                                    return isNaN(d.getTime())
-                                      ? "N/A"
-                                      : format(d, "MMM dd, yyyy HH:mm");
-                                  })()
-                                : "N/A"}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-sm">
-                            {incident.userEmail}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              <TrendingUp className="h-4 w-4" />
-                              <span
-                                className={`text-sm font-medium ${getConfidenceColor(
-                                  incident.aiConfidence
-                                )}`}
-                              >
-                                {(incident.aiConfidence * 100).toFixed(1)}%
-                              </span>
-                            </div>
-                          </TableCell>
+                            )}
+                            {incident.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3" />
+                            {typeof incident.latitude === "number" &&
+                            typeof incident.longitude === "number"
+                              ? `${incident.latitude.toFixed(
+                                  4
+                                )}, ${incident.longitude.toFixed(4)}`
+                              : incident.location &&
+                                typeof incident.location.lat === "number" &&
+                                typeof incident.location.lng === "number"
+                              ? `${incident.location.lat.toFixed(
+                                  4
+                                )}, ${incident.location.lng.toFixed(4)}`
+                              : "N/A"}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          <div className="flex items-center gap-1 text-xs">
+                            <CalendarIcon className="h-3 w-3" />
+                            {format(
+                              new Date(incident.timestamp),
+                              "MMM dd, yyyy HH:mm"
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{incident.count}</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {incident.userEmail}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <TrendingUp className="h-4 w-4" />
+                            <span
+                              className={`text-sm font-medium ${getConfidenceColor(
+                                incident.aiConfidence
+                              )}`}
+                            >
+                              {(incident.aiConfidence * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                        </TableCell>
 
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      setSelectedIncident(incident)
-                                    }
-                                  >
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-w-4xl max-h-[80vh]">
-                                  <DialogHeader>
-                                    <DialogTitle className="flex items-center gap-2">
-                                      <span className="text-xl">
-                                        {INCIDENT_TYPES[incident.incidentType]
-                                          ?.icon || "❓"}
-                                      </span>
-                                      {INCIDENT_TYPES[incident.incidentType]
-                                        ?.label || incident.incidentType}
-                                    </DialogTitle>
-                                    <DialogDescription>
-                                      Full incident details and actions
-                                    </DialogDescription>
-                                  </DialogHeader>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setSelectedIncident(incident)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-4xl max-h-[80vh]">
+                                <DialogHeader>
+                                  <DialogTitle className="flex items-center gap-2">
+                                    {INCIDENT_TYPES[incident.incidentType]
+                                      ?.icon || "❓"}
+                                    {incident.incidentType}
+                                  </DialogTitle>
+                                  <DialogDescription>
+                                    Full incident details and actions
+                                  </DialogDescription>
+                                </DialogHeader>
 
-                                  <ScrollArea className="max-h-[60vh]">
-                                    <div className="space-y-4">
+                                <ScrollArea className="max-h-[60vh]">
+                                  <div className="space-y-4">
+                                    <div>
+                                      <h4 className="font-medium mb-2">
+                                        Description
+                                      </h4>
+                                      <p className="text-gray-600">
+                                        {incident.description}
+                                      </p>
+                                    </div>
+
+                                    <Separator />
+
+                                    <div className="grid grid-cols-2 gap-4">
                                       <div>
                                         <h4 className="font-medium mb-2">
-                                          Description
+                                          Location
                                         </h4>
-                                        <p className="text-gray-600">
-                                          {incident.description}
-                                        </p>
-                                      </div>
-
-                                      <Separator />
-
-                                      <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                          <h4 className="font-medium mb-2">
-                                            Location
-                                          </h4>
-                                          <p className="text-gray-600 flex items-center gap-2">
-                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                              <MapPin className="h-3 w-3" />
-                                              {typeof incident.latitude ===
+                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                          <MapPin className="h-3 w-3" />
+                                          {typeof incident.latitude ===
+                                            "number" &&
+                                          typeof incident.longitude === "number"
+                                            ? `${incident.latitude.toFixed(
+                                                4
+                                              )}, ${incident.longitude.toFixed(
+                                                4
+                                              )}`
+                                            : incident.location &&
+                                              typeof incident.location.lat ===
                                                 "number" &&
-                                              typeof incident.longitude ===
+                                              typeof incident.location.lng ===
                                                 "number"
-                                                ? `${incident.latitude.toFixed(
-                                                    4
-                                                  )}, ${incident.longitude.toFixed(
-                                                    4
-                                                  )}`
-                                                : incident.location &&
-                                                  typeof incident.location
-                                                    .lat === "number" &&
-                                                  typeof incident.location
-                                                    .lng === "number"
-                                                ? `${incident.location.lat.toFixed(
-                                                    4
-                                                  )}, ${incident.location.lng.toFixed(
-                                                    4
-                                                  )}`
-                                                : "N/A"}
-                                            </div>
-                                          </p>
-                                        </div>
-                                        <div>
-                                          <h4 className="font-medium mb-2">
-                                            Date
-                                          </h4>
-                                          <p className="text-gray-600 flex items-center gap-2">
-                                            <div className="flex items-center gap-1 text-xs">
-                                              <Calendar className="h-3 w-3" />
-                                              {format(
-                                                new Date(incident.timestamp),
-                                                "MMM dd, yyyy HH:mm"
-                                              )}
-                                            </div>
-                                          </p>
+                                            ? `${incident.location.lat.toFixed(
+                                                4
+                                              )}, ${incident.location.lng.toFixed(
+                                                4
+                                              )}`
+                                            : "N/A"}
                                         </div>
                                       </div>
-
-                                      <Separator />
-
                                       <div>
                                         <h4 className="font-medium mb-2">
-                                          AI Analysis
+                                          Date
                                         </h4>
-                                        <div className="flex items-center gap-2">
-                                          <TrendingUp className="h-4 w-4" />
-                                          <span>Confidence Score: </span>
-                                          <span
-                                            className={`font-medium ${getConfidenceColor(
-                                              incident.aiConfidence
-                                            )}`}
-                                          >
-                                            {(
-                                              incident.aiConfidence * 100
-                                            ).toFixed(1)}
-                                            %
-                                          </span>
-                                        </div>
-                                      </div>
-
-                                      <Separator />
-                                      <div>
-                                        <h4 className="font-medium mb-3">
-                                          Uploaded Images
-                                        </h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                          {incident.imageUrl && (
-                                            <div>
-                                              <div className="mt-1">
-                                                <img
-                                                  src={incident.imageUrl}
-                                                  alt="Incident evidence"
-                                                  className="max-w-full h-auto rounded-md border"
-                                                />
-                                              </div>
-                                            </div>
+                                        <div className="flex items-center gap-1 text-xs">
+                                          <CalendarIcon className="h-3 w-3" />
+                                          {format(
+                                            new Date(incident.timestamp),
+                                            "MMM dd, yyyy HH:mm"
                                           )}
                                         </div>
                                       </div>
+                                    </div>
 
-                                      <Separator />
+                                    <Separator />
 
-                                      <div>
-                                        <h4 className="font-medium mb-3">
-                                          Actions
-                                        </h4>
-                                        <div className="flex gap-2">
-                                          <Button
-                                            onClick={() =>
-                                              handleStatusChange(
-                                                incident.id,
-                                                "Resolved"
-                                              )
-                                            }
-                                            className="bg-green-600 hover:bg-green-700"
-                                          >
-                                            <CheckCircle className="h-4 w-4 mr-2" />
-                                            Approve
-                                          </Button>
-                                          <Button
-                                            onClick={() =>
-                                              handleStatusChange(
-                                                incident.id,
-                                                "Rejected"
-                                              )
-                                            }
-                                            variant="destructive"
-                                          >
-                                            <XCircle className="h-4 w-4 mr-2" />
-                                            Reject
-                                          </Button>
-                                          <Button
-                                            onClick={() =>
-                                              handleDeleteIncident(incident.id)
-                                            }
-                                            variant="outline"
-                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                          >
-                                            <Trash2 className="h-4 w-4 mr-2" />
-                                            Delete
-                                          </Button>
-                                        </div>
+                                    <div>
+                                      <h4 className="font-medium mb-2">
+                                        AI Analysis
+                                      </h4>
+                                      <div className="flex items-center gap-2">
+                                        <TrendingUp className="h-4 w-4" />
+                                        <span>Confidence Score: </span>
+                                        <span
+                                          className={`font-medium ${getConfidenceColor(
+                                            incident.aiConfidence
+                                          )}`}
+                                        >
+                                          {(
+                                            incident.aiConfidence * 100
+                                          ).toFixed(1)}
+                                          %
+                                        </span>
                                       </div>
                                     </div>
-                                  </ScrollArea>
-                                </DialogContent>
-                              </Dialog>
 
-                              <Button
-                                size="sm"
-                                onClick={() =>
-                                  handleStatusChange(incident.id, "Resolved")
-                                }
-                                className="bg-green-600 hover:bg-green-700"
-                                disabled={incident.status === "Resolved"}
-                              >
-                                <CheckCircle className="h-4 w-4" />
-                              </Button>
+                                    <Separator />
+                                    <div>
+                                      <h4 className="font-medium mb-3">
+                                        Uploaded Images
+                                      </h4>
+                                      <div className="mt-1">
+                                        <img
+                                          src={incident.imageUrl}
+                                          alt="Incident evidence"
+                                          className="max-w-full h-auto rounded-md border"
+                                        />
+                                      </div>
+                                    </div>
 
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() =>
-                                  handleStatusChange(incident.id, "Rejected")
-                                }
-                                disabled={incident.status === "Rejected"}
-                              >
-                                <XCircle className="h-4 w-4" />
-                              </Button>
+                                    <Separator />
 
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() =>
-                                  handleDeleteIncident(incident.id)
-                                }
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
+                                    <div>
+                                      <h4 className="font-medium mb-3">
+                                        Actions
+                                      </h4>
+                                      <div className="flex gap-2">
+                                        <Button
+                                          onClick={() =>
+                                            handleStatusChange(
+                                              incident.id,
+                                              "resolved"
+                                            )
+                                          }
+                                          className="bg-green-600 hover:bg-green-700"
+                                        >
+                                          <CheckCircle className="h-4 w-4 mr-2" />
+                                          Approve
+                                        </Button>
+                                        <Button
+                                          onClick={() =>
+                                            handleStatusChange(
+                                              incident.id,
+                                              "rejected"
+                                            )
+                                          }
+                                          variant="destructive"
+                                        >
+                                          <XCircle className="h-4 w-4 mr-2" />
+                                          Rejected
+                                        </Button>
+                                        <Button
+                                          onClick={() =>
+                                            handleDeleteIncident(incident.id)
+                                          }
+                                          variant="outline"
+                                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                        >
+                                          <Trash2 className="h-4 w-4 mr-2" />
+                                          Delete
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </ScrollArea>
+                              </DialogContent>
+                            </Dialog>
+
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                handleStatusChange(incident.id, "resolved")
+                              }
+                              className="bg-green-600 hover:bg-green-700"
+                              disabled={
+                                loading || incident.status === "resolved"
+                              }
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() =>
+                                handleStatusChange(incident.id, "rejected")
+                              }
+                              disabled={
+                                incident.status === "rejected" || loading
+                              }
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDeleteIncident(incident.id)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              disabled={loading}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
               </Table>
             </div>
           </CardContent>
@@ -801,25 +805,70 @@ export default function IncidentManagement() {
                   </Select>
                 </div>
                 {totalPages > 1 && (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handlePreviousPage}
-                      disabled={currentPage === 1}
-                    >
-                      Previous
-                    </Button>
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={handlePreviousPage}
+                          className={
+                            currentPage === 1
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleNextPage}
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </Button>
-                  </div>
+                      {/* Page numbers */}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => {
+                          // Show first page, last page, current page, and pages around current
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          ) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationLink
+                                  onClick={() => handlePageChange(page)}
+                                  isActive={currentPage === page}
+                                  className="cursor-pointer"
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            );
+                          }
+
+                          // Show ellipsis for gaps
+                          if (
+                            (page === 2 && currentPage > 3) ||
+                            (page === totalPages - 1 &&
+                              currentPage < totalPages - 2)
+                          ) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationEllipsis />
+                              </PaginationItem>
+                            );
+                          }
+
+                          return null;
+                        }
+                      )}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={handleNextPage}
+                          className={
+                            currentPage === totalPages
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
                 )}
               </div>
             </div>
