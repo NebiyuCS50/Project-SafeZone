@@ -1,7 +1,13 @@
 // utils/createIncident.js
 
 import { db } from "@/firebase/firebase";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  serverTimestamp,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
 
 export async function IncidentReporting({
   incidentType,
@@ -29,4 +35,13 @@ export async function IncidentReporting({
   await setDoc(newIncidentRef, incidentData);
 
   return { id: newIncidentRef.id, ...incidentData };
+}
+
+export async function updateIncidentStatus(id, status) {
+  const ref = doc(db, "incidents", id);
+  await updateDoc(ref, { status });
+}
+export async function deleteIncident(incidentId) {
+  const ref = doc(db, "incidents", incidentId);
+  await deleteDoc(ref);
 }
