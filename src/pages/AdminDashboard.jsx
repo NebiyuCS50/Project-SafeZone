@@ -7,7 +7,6 @@ import { Shield, Menu, LogOut, ChevronRight, Settings } from "lucide-react";
 
 import { toast } from "sonner";
 import AdminSidebar from "@/components/Admin/AdminSidebar";
-import { ReportIncident } from "@/components/user/ReportIncident";
 import AdminOverview from "@/components/Admin/AdminOverview";
 import IncidentReportsTable from "@/components/user/MyReport";
 import { logout } from "@/firebase/auth/emailAuth";
