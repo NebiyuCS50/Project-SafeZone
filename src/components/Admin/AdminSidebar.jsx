@@ -1,9 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import {
-  Map,
-  Plus,
-  FileText,
   Bell,
   User,
   LogOut,
@@ -14,6 +11,7 @@ import {
   BadgeCheck,
   LayoutDashboard,
   ShieldUser,
+  SquareKanban,
 } from "lucide-react";
 import { toast } from "sonner";
 import fetchUserData from "@/utils/user";
@@ -35,8 +33,11 @@ const navigation = [
   {
     title: "Incidents",
     items: [
-      { title: "Report Incident", icon: Plus, href: "/dashboard/report" },
-      { title: "My Reports", icon: FileText, href: "/dashboard/reports" },
+      {
+        title: "Incident Management",
+        icon: SquareKanban,
+        href: "/dashboard/Incident Management",
+      },
     ],
   },
   {
