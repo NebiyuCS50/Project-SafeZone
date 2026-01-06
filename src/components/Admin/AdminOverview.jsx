@@ -116,9 +116,9 @@ export default function AdminOverview() {
         (r) => getTimestampMs(r.timestamp) >= sevenDaysAgo
       ).length;
       const verifiedReports = reports.filter(
-        (r) => r.status === "Resolved"
+        (r) => r.status === "resolved"
       ).length;
-      const fakeReports = reports.filter((r) => r.status === "Rejected").length;
+      const fakeReports = reports.filter((r) => r.status === "rejected").length;
       const pendingReports = reports.filter(
         (r) => r.status === "pending"
       ).length;
