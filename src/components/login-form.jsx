@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { login } from "@/firebase/auth/emailAuth";
+import fetchUserData from "@/utils/user";
 
 export function LoginForm({ className, ...props }) {
   const navigate = useNavigate();
@@ -26,6 +27,18 @@ export function LoginForm({ className, ...props }) {
     setLoading(true);
     try {
       await login(email, password);
+
+      // Fetch user data from Firestore
+      const userData = await fetchUserData();
+      if (userData.isActive === false) {
+        toast.error("Account disabled", {
+          description:
+            "Your account has been disabled. Please contact support.",
+        });
+        setLoading(false);
+        return;
+      }
+
       toast.success("Login successful", {
         description: <span>Welcome back!</span>,
       });
