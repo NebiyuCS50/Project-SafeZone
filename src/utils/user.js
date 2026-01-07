@@ -13,7 +13,24 @@ export default async function fetchUserData() {
     UserDocSnap && (await UserDocSnap).exists()
       ? (await UserDocSnap).data().name
       : null;
-  return { email, name };
+  const createdAt =
+    UserDocSnap && (await UserDocSnap).exists()
+      ? (await UserDocSnap).data().createdAt
+      : null;
+  const isActive =
+    UserDocSnap && (await UserDocSnap).exists()
+      ? (await UserDocSnap).data().isActive
+      : null;
+  const phoneNumber =
+    UserDocSnap && (await UserDocSnap).exists()
+      ? (await UserDocSnap).data().phoneNumber
+      : null;
+  const role =
+    UserDocSnap && (await UserDocSnap).exists()
+      ? (await UserDocSnap).data().role
+      : null;
+
+  return { email, name, createdAt, isActive, phoneNumber, role };
 }
 
 export async function fetchAllReports() {
@@ -44,4 +61,12 @@ export async function countActiveUsers() {
   });
 
   return activeCount;
+}
+export async function countTotalUsers() {
+  const usersSnapshot = await getDocs(collection(db, "users"));
+  const users = [];
+  usersSnapshot.forEach((docSnap) => {
+    users.push({ id: docSnap.id, ...docSnap.data() });
+  });
+  return users;
 }
