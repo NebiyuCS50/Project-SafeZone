@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import LiveIncident from "@/components/user/LiveIncident";
 import UserProfile from "@/components/user/Profile";
 import IncidentManagement from "@/components/Admin/IncidentManagement";
+import UserManagement from "@/components/Admin/UserManagement";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("Admin Overview");
@@ -27,8 +28,8 @@ export default function AdminDashboard() {
         ? ["Dashboard", "Admin Overview"]
         : activeTab === "Incident Management"
         ? ["Dashboard", "Incidents", "Incident Management"]
-        : activeTab === "reports"
-        ? ["Dashboard", "Incidents", "My Reports"]
+        : activeTab === "User Management"
+        ? ["Dashboard", "Users", "User Management"]
         : activeTab === "alerts"
         ? ["Dashboard", "Safety", "Live Alerts"]
         : activeTab === "profile"
@@ -43,6 +44,7 @@ export default function AdminDashboard() {
     await logout();
     toast.success("Signed Out", {
       description: "You have been successfully signed out.",
+      duration: 500,
     });
 
     navigate("/");
@@ -76,14 +78,16 @@ export default function AdminDashboard() {
             <IncidentManagement />
           </div>
         );
-      case "reports":
+      case "User Management":
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">My Reports</h2>
-              <p className="text-gray-600">Incidents you have reported</p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                User Management
+              </h2>
+              <p className="text-gray-600">Manage users in the system</p>
             </div>
-            <IncidentReportsTable />
+            <UserManagement />
           </div>
         );
       case "alerts":
