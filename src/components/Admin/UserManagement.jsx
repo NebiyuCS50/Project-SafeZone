@@ -37,7 +37,6 @@ import {
   Users,
   AlertTriangle,
   Calendar,
-  User,
 } from "lucide-react";
 import { toast } from "sonner";
 import { countTotalUsers } from "@/utils/user";
