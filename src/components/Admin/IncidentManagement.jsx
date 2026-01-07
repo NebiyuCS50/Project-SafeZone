@@ -127,7 +127,6 @@ export default function IncidentManagement() {
   const [incidents, setIncidents] = useState([]);
   const [filteredIncidents, setFilteredIncidents] = useState([]);
   const [selectedIncident, setSelectedIncident] = useState(null);
-  const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filters, setFilters] = useState({
@@ -346,25 +345,6 @@ export default function IncidentManagement() {
         {/* Filters Bar */}
         <Card className="mb-6">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
-                <h3 className="font-semibold">Filters</h3>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                {showFilters ? "Hide" : "Show"} Filters
-                <ChevronDown
-                  className={`h-4 w-4 ml-2 transition-transform ${
-                    showFilters ? "rotate-180" : ""
-                  }`}
-                />
-              </Button>
-            </div>
-
             {/* Quick Filters */}
             <div className="flex flex-wrap gap-4 mb-4">
               <div className="flex-1 min-w-64">
