@@ -41,8 +41,14 @@ const navigation = [
     ],
   },
   {
-    title: "Safety",
-    items: [{ title: "Live Alerts", icon: Bell, href: "/dashboard/alerts" }],
+    title: "User Management",
+    items: [
+      {
+        title: "User Management",
+        icon: Bell,
+        href: "/dashboard/User Management",
+      },
+    ],
   },
   {
     title: "Account",
