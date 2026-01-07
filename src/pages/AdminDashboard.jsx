@@ -8,13 +8,13 @@ import { Shield, Menu, LogOut, ChevronRight, Settings } from "lucide-react";
 import { toast } from "sonner";
 import AdminSidebar from "@/components/Admin/AdminSidebar";
 import AdminOverview from "@/components/Admin/AdminOverview";
-import IncidentReportsTable from "@/components/user/MyReport";
 import { logout } from "@/firebase/auth/emailAuth";
 import { useNavigate } from "react-router-dom";
 import LiveIncident from "@/components/user/LiveIncident";
 import UserProfile from "@/components/user/Profile";
 import IncidentManagement from "@/components/Admin/IncidentManagement";
 import UserManagement from "@/components/Admin/UserManagement";
+import Analytics from "@/components/Admin/Analytics";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("Admin Overview");
@@ -32,10 +32,8 @@ export default function AdminDashboard() {
         ? ["Dashboard", "Users", "User Management"]
         : activeTab === "alerts"
         ? ["Dashboard", "Safety", "Live Alerts"]
-        : activeTab === "profile"
-        ? ["Dashboard", "Account", "Profile"]
-        : activeTab === "settings"
-        ? ["Dashboard", "Account", "Settings"]
+        : activeTab === "analytics"
+        ? ["Dashboard", "User Analytics", "Analytics"]
         : ["Dashboard"];
     return path;
   };
@@ -90,51 +88,18 @@ export default function AdminDashboard() {
             <UserManagement />
           </div>
         );
-      case "alerts":
+
+      case "analytics":
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Live Alert</h2>
-              <p className="text-gray-600">Incidents around you</p>
+              <h2 className="text-2xl font-bold text-gray-900">Analytics</h2>
+              <p className="text-gray-600">User analytics and insights</p>
             </div>
-            <LiveIncident />
+            <Analytics />
           </div>
         );
-      case "profile":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Profile</h2>
-              <p className="text-gray-600">
-                Manage your account settings and preferences
-              </p>
-            </div>
-            <UserProfile />
-          </div>
-        );
-      case "settings":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
-              <p className="text-gray-600">
-                Manage your application preferences
-              </p>
-            </div>
-            <Card>
-              <CardContent className="text-center py-12">
-                <Settings className="w-16 h-16 text-gray-400 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Settings
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Application settings and preferences
-                </p>
-                <Badge variant="outline">Settings Component Ready</Badge>
-              </CardContent>
-            </Card>
-          </div>
-        );
+
       default:
         return (
           <div className="text-center py-12">
