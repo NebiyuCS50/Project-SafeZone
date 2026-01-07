@@ -45,14 +45,14 @@ const navigation = [
     items: [
       {
         title: "User Management",
-        icon: Bell,
+        icon: User,
         href: "/dashboard/User Management",
       },
     ],
   },
   {
-    title: "Account",
-    items: [{ title: "Profile", icon: User, href: "/dashboard/profile" }],
+    title: "Analytics",
+    items: [{ title: "Analytics", icon: User, href: "/dashboard/analytics" }],
   },
 ];
 
