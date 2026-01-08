@@ -73,6 +73,7 @@ import { fetchAllReports } from "@/utils/user";
 import { format } from "date-fns";
 import { updateIncidentStatus } from "@/firebase/incidentReporting";
 import { deleteIncident } from "@/firebase/incidentReporting";
+import Loading from "../ui/Loading";
 
 const INCIDENT_TYPES = {
   accident: { label: "Accident", icon: "🚗", color: "destructive" },
