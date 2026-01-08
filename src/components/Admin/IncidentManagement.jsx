@@ -284,7 +284,7 @@ export default function IncidentManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 pt-6">
       <div className="max-w-7xl mx-auto">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -463,298 +463,308 @@ export default function IncidentManagement() {
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
-                {filteredIncidents.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={9} className="text-center py-8">
-                      <p className="text-gray-500">
-                        No incidents found matching your filters.
-                      </p>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  paginatedIncidents.map((incident) => {
-                    const StatusIcon = statusIcons[incident.status] || null;
+                <TableBody>
+                  {filteredIncidents.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={9} className="text-center py-8">
+                        <p className="text-gray-500">
+                          No incidents found matching your filters.
+                        </p>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    paginatedIncidents.map((incident) => {
+                      const StatusIcon = statusIcons[incident.status] || null;
 
-                    return (
-                      <TableRow key={incident.id} className="hover:bg-gray-50">
-                        <TableCell>
-                          <div className="flex items-center justify-center">
-                            {INCIDENT_TYPES[incident.incidentType]?.icon ||
-                              "❓"}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">
-                              {incident.incidentType}
+                      return (
+                        <TableRow
+                          key={incident.id}
+                          className="hover:bg-gray-50"
+                        >
+                          <TableCell>
+                            <div className="flex items-center justify-center">
+                              {INCIDENT_TYPES[incident.incidentType]?.icon ||
+                                "❓"}
                             </div>
-                            <div className="text-sm text-gray-500 truncate max-w-xs">
-                              {incident.description}
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">
+                                {incident.incidentType}
+                              </div>
+                              <div className="text-sm text-gray-500 truncate max-w-xs">
+                                {incident.description}
+                              </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={
-                              statusColors[incident.status] ||
-                              "bg-gray-100 text-gray-800"
-                            }
-                          >
-                            {StatusIcon && (
-                              <StatusIcon className="h-3 w-3 mr-1" />
-                            )}
-                            {incident.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <MapPin className="h-3 w-3" />
-                            {typeof incident.latitude === "number" &&
-                            typeof incident.longitude === "number"
-                              ? `${incident.latitude.toFixed(
-                                  4
-                                )}, ${incident.longitude.toFixed(4)}`
-                              : incident.location &&
-                                typeof incident.location.lat === "number" &&
-                                typeof incident.location.lng === "number"
-                              ? `${incident.location.lat.toFixed(
-                                  4
-                                )}, ${incident.location.lng.toFixed(4)}`
-                              : "N/A"}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          <div className="flex items-center gap-1 text-xs">
-                            <CalendarIcon className="h-3 w-3" />
-                            {format(
-                              new Date(incident.timestamp),
-                              "MMM dd, yyyy HH:mm"
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{incident.count}</Badge>
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {incident.userEmail}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className="h-4 w-4" />
-                            <span
-                              className={`text-sm font-medium ${getConfidenceColor(
-                                incident.aiConfidence
-                              )}`}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              className={
+                                statusColors[incident.status] ||
+                                "bg-gray-100 text-gray-800"
+                              }
                             >
-                              {(incident.aiConfidence * 100).toFixed(1)}%
-                            </span>
-                          </div>
-                        </TableCell>
+                              {StatusIcon && (
+                                <StatusIcon className="h-3 w-3 mr-1" />
+                              )}
+                              {incident.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <MapPin className="h-3 w-3" />
+                              {typeof incident.latitude === "number" &&
+                              typeof incident.longitude === "number"
+                                ? `${incident.latitude.toFixed(
+                                    4
+                                  )}, ${incident.longitude.toFixed(4)}`
+                                : incident.location &&
+                                  typeof incident.location.lat === "number" &&
+                                  typeof incident.location.lng === "number"
+                                ? `${incident.location.lat.toFixed(
+                                    4
+                                  )}, ${incident.location.lng.toFixed(4)}`
+                                : "N/A"}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            <div className="flex items-center gap-1 text-xs">
+                              <CalendarIcon className="h-3 w-3" />
+                              {format(
+                                new Date(incident.timestamp),
+                                "MMM dd, yyyy HH:mm"
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{incident.count}</Badge>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {incident.userEmail}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <TrendingUp className="h-4 w-4" />
+                              <span
+                                className={`text-sm font-medium ${getConfidenceColor(
+                                  incident.aiConfidence
+                                )}`}
+                              >
+                                {(incident.aiConfidence * 100).toFixed(1)}%
+                              </span>
+                            </div>
+                          </TableCell>
 
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => setSelectedIncident(incident)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-4xl max-h-[80vh]">
-                                <DialogHeader>
-                                  <DialogTitle className="flex items-center gap-2">
-                                    {INCIDENT_TYPES[incident.incidentType]
-                                      ?.icon || "❓"}
-                                    {incident.incidentType}
-                                  </DialogTitle>
-                                  <DialogDescription>
-                                    Full incident details and actions
-                                  </DialogDescription>
-                                </DialogHeader>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      setSelectedIncident(incident)
+                                    }
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-4xl max-h-[80vh]">
+                                  <DialogHeader>
+                                    <DialogTitle className="flex items-center gap-2">
+                                      {INCIDENT_TYPES[incident.incidentType]
+                                        ?.icon || "❓"}
+                                      {incident.incidentType}
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                      Full incident details and actions
+                                    </DialogDescription>
+                                  </DialogHeader>
 
-                                <ScrollArea className="max-h-[60vh]">
-                                  <div className="space-y-4">
-                                    <div>
-                                      <h4 className="font-medium mb-2">
-                                        Description
-                                      </h4>
-                                      <p className="text-gray-600">
-                                        {incident.description}
-                                      </p>
-                                    </div>
-
-                                    <Separator />
-
-                                    <div className="grid grid-cols-2 gap-4">
+                                  <ScrollArea className="max-h-[60vh]">
+                                    <div className="space-y-4">
                                       <div>
                                         <h4 className="font-medium mb-2">
-                                          Location
+                                          Description
                                         </h4>
-                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                          <MapPin className="h-3 w-3" />
-                                          {typeof incident.latitude ===
-                                            "number" &&
-                                          typeof incident.longitude === "number"
-                                            ? `${incident.latitude.toFixed(
-                                                4
-                                              )}, ${incident.longitude.toFixed(
-                                                4
-                                              )}`
-                                            : incident.location &&
-                                              typeof incident.location.lat ===
-                                                "number" &&
-                                              typeof incident.location.lng ===
-                                                "number"
-                                            ? `${incident.location.lat.toFixed(
-                                                4
-                                              )}, ${incident.location.lng.toFixed(
-                                                4
-                                              )}`
-                                            : "N/A"}
+                                        <p className="text-gray-600">
+                                          {incident.description}
+                                        </p>
+                                      </div>
+
+                                      <Separator />
+
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <h4 className="font-medium mb-2">
+                                            Location
+                                          </h4>
+                                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                            <MapPin className="h-3 w-3" />
+                                            {typeof incident.latitude ===
+                                              "number" &&
+                                            typeof incident.longitude ===
+                                              "number"
+                                              ? `${incident.latitude.toFixed(
+                                                  4
+                                                )}, ${incident.longitude.toFixed(
+                                                  4
+                                                )}`
+                                              : incident.location &&
+                                                typeof incident.location.lat ===
+                                                  "number" &&
+                                                typeof incident.location.lng ===
+                                                  "number"
+                                              ? `${incident.location.lat.toFixed(
+                                                  4
+                                                )}, ${incident.location.lng.toFixed(
+                                                  4
+                                                )}`
+                                              : "N/A"}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <h4 className="font-medium mb-2">
+                                            Date
+                                          </h4>
+                                          <div className="flex items-center gap-1 text-xs">
+                                            <CalendarIcon className="h-3 w-3" />
+                                            {format(
+                                              new Date(incident.timestamp),
+                                              "MMM dd, yyyy HH:mm"
+                                            )}
+                                          </div>
                                         </div>
                                       </div>
+
+                                      <Separator />
+
                                       <div>
                                         <h4 className="font-medium mb-2">
-                                          Date
+                                          AI Analysis
                                         </h4>
-                                        <div className="flex items-center gap-1 text-xs">
-                                          <CalendarIcon className="h-3 w-3" />
-                                          {format(
-                                            new Date(incident.timestamp),
-                                            "MMM dd, yyyy HH:mm"
-                                          )}
+                                        <div className="flex items-center gap-2">
+                                          <TrendingUp className="h-4 w-4" />
+                                          <span>Confidence Score: </span>
+                                          <span
+                                            className={`font-medium ${getConfidenceColor(
+                                              incident.aiConfidence
+                                            )}`}
+                                          >
+                                            {(
+                                              incident.aiConfidence * 100
+                                            ).toFixed(1)}
+                                            %
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      <Separator />
+                                      <div>
+                                        <h4 className="font-medium mb-3">
+                                          Uploaded Images
+                                        </h4>
+                                        <div className="mt-1">
+                                          <img
+                                            src={incident.imageUrl}
+                                            alt="Incident evidence"
+                                            className="max-w-full h-auto rounded-md border"
+                                          />
+                                        </div>
+                                      </div>
+
+                                      <Separator />
+
+                                      <div>
+                                        <h4 className="font-medium mb-3">
+                                          Actions
+                                        </h4>
+                                        <div className="flex gap-2">
+                                          <Button
+                                            onClick={() =>
+                                              handleStatusChange(
+                                                incident.id,
+                                                "resolved"
+                                              )
+                                            }
+                                            className="bg-green-600 hover:bg-green-700"
+                                          >
+                                            <CheckCircle className="h-4 w-4 mr-2" />
+                                            Approve
+                                          </Button>
+                                          <Button
+                                            onClick={() =>
+                                              handleStatusChange(
+                                                incident.id,
+                                                "rejected"
+                                              )
+                                            }
+                                            variant="destructive"
+                                          >
+                                            <XCircle className="h-4 w-4 mr-2" />
+                                            Rejected
+                                          </Button>
+                                          <Button
+                                            onClick={() =>
+                                              handleDeleteIncident(incident.id)
+                                            }
+                                            variant="outline"
+                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                          >
+                                            <Trash2 className="h-4 w-4 mr-2" />
+                                            Delete
+                                          </Button>
                                         </div>
                                       </div>
                                     </div>
+                                  </ScrollArea>
+                                </DialogContent>
+                              </Dialog>
 
-                                    <Separator />
+                              <Button
+                                size="sm"
+                                onClick={() =>
+                                  handleStatusChange(incident.id, "resolved")
+                                }
+                                className="bg-green-600 hover:bg-green-700"
+                                disabled={
+                                  loading || incident.status === "resolved"
+                                }
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </Button>
 
-                                    <div>
-                                      <h4 className="font-medium mb-2">
-                                        AI Analysis
-                                      </h4>
-                                      <div className="flex items-center gap-2">
-                                        <TrendingUp className="h-4 w-4" />
-                                        <span>Confidence Score: </span>
-                                        <span
-                                          className={`font-medium ${getConfidenceColor(
-                                            incident.aiConfidence
-                                          )}`}
-                                        >
-                                          {(
-                                            incident.aiConfidence * 100
-                                          ).toFixed(1)}
-                                          %
-                                        </span>
-                                      </div>
-                                    </div>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() =>
+                                  handleStatusChange(incident.id, "rejected")
+                                }
+                                disabled={
+                                  incident.status === "rejected" || loading
+                                }
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
 
-                                    <Separator />
-                                    <div>
-                                      <h4 className="font-medium mb-3">
-                                        Uploaded Images
-                                      </h4>
-                                      <div className="mt-1">
-                                        <img
-                                          src={incident.imageUrl}
-                                          alt="Incident evidence"
-                                          className="max-w-full h-auto rounded-md border"
-                                        />
-                                      </div>
-                                    </div>
-
-                                    <Separator />
-
-                                    <div>
-                                      <h4 className="font-medium mb-3">
-                                        Actions
-                                      </h4>
-                                      <div className="flex gap-2">
-                                        <Button
-                                          onClick={() =>
-                                            handleStatusChange(
-                                              incident.id,
-                                              "resolved"
-                                            )
-                                          }
-                                          className="bg-green-600 hover:bg-green-700"
-                                        >
-                                          <CheckCircle className="h-4 w-4 mr-2" />
-                                          Approve
-                                        </Button>
-                                        <Button
-                                          onClick={() =>
-                                            handleStatusChange(
-                                              incident.id,
-                                              "rejected"
-                                            )
-                                          }
-                                          variant="destructive"
-                                        >
-                                          <XCircle className="h-4 w-4 mr-2" />
-                                          Rejected
-                                        </Button>
-                                        <Button
-                                          onClick={() =>
-                                            handleDeleteIncident(incident.id)
-                                          }
-                                          variant="outline"
-                                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                        >
-                                          <Trash2 className="h-4 w-4 mr-2" />
-                                          Delete
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </ScrollArea>
-                              </DialogContent>
-                            </Dialog>
-
-                            <Button
-                              size="sm"
-                              onClick={() =>
-                                handleStatusChange(incident.id, "resolved")
-                              }
-                              className="bg-green-600 hover:bg-green-700"
-                              disabled={
-                                loading || incident.status === "resolved"
-                              }
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </Button>
-
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() =>
-                                handleStatusChange(incident.id, "rejected")
-                              }
-                              disabled={
-                                incident.status === "rejected" || loading
-                              }
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleDeleteIncident(incident.id)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              disabled={loading}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handleDeleteIncident(incident.id)
+                                }
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                disabled={loading}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
               </Table>
             </div>
           </CardContent>
