@@ -108,11 +108,8 @@ export default function Sidebar({
       >
         <div className="flex h-full flex-col">
           {/* Sidebar Header */}
-          <div className="p-4 border-b">
+          <div className="p-2 ">
             <div className="flex items-center justify-between">
-              <h1 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <ShieldUser size={32} /> Admin Panel
-              </h1>
               <Button
                 variant="ghost"
                 size="sm"
