@@ -224,7 +224,7 @@ export default function UserManagement() {
 
   return (
     <div className="min-h-screen  bg-gray-50 p-0">
-      <main className="container mx-auto px-3 py-1">
+      <main className="container mx-auto  py-1">
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card>
