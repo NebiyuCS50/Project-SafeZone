@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { fetchAllReports } from "@/utils/user";
+import Loading from "../ui/Loading";
 
 const COLORS = [
   "#0088FE",
@@ -199,20 +200,10 @@ export default function Analytics() {
   useEffect(() => {
     fetchAnalyticsData();
   }, []);
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b">
-          <div className="container mx-auto px-4 py-6">
-            <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-          </div>
-        </header>
-        <main className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-lg">Loading analytics data...</div>
-          </div>
-        </main>
+      <div className="flex items-center justify-center min-h-[300px]">
+        <Loading text="Loading incidents..." />
       </div>
     );
   }
