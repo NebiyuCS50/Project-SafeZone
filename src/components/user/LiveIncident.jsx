@@ -40,8 +40,18 @@ const INCIDENT_TYPES = {
   other: { label: "Other", color: "secondary" },
 };
 const STATUSES = {
-  pending: { label: "Pending", color: "secondary" },
-  resolved: { label: "Resolved", color: "success" },
+  pending: {
+    label: "Pending",
+    className: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  },
+  resolved: {
+    label: "Resolved",
+    className: "bg-green-100 text-green-800 border-green-200",
+  },
+  rejected: {
+    label: "Rejected",
+    className: "bg-red-100 text-red-800 border-red-200",
+  },
 };
 
 // Group reports by location (rounded to 4 decimals)
@@ -83,7 +93,7 @@ export default function LiveIncident() {
     ([locTypeKey, group]) => {
       // Determine alert level for this location/type group
       let level = "none";
-      if (group.length >= 7) level = "high";
+      if (group.length >= 3) level = "high";
       else if (group.length >= 2) level = "medium";
       else if (group.length >= 1) level = "low";
       // Use the first report for display info
@@ -290,20 +300,23 @@ export default function LiveIncident() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={STATUSES[row.status]?.color || "secondary"}
+                          className={
+                            STATUSES[row.status]?.className ||
+                            "bg-gray-100 text-gray-800"
+                          }
                         >
                           {STATUSES[row.status]?.label || row.status}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={
+                          className={
                             row.alertLevel === "high"
-                              ? "destructive"
+                              ? "bg-red-100 text-red-800 border-red-200"
                               : row.alertLevel === "medium"
-                              ? "warning"
+                              ? "bg-yellow-100 text-yellow-800 border-yellow-200"
                               : row.alertLevel === "low"
-                              ? "secondary"
+                              ? "bg-green-100 text-green-800 border-green-200"
                               : "outline"
                           }
                         >
