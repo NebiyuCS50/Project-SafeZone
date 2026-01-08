@@ -1,17 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
-import { Badge } from "@/components/ui/badge";
-import { Shield, Menu, LogOut, ChevronRight, Settings } from "lucide-react";
+import { Shield, Menu, LogOut, ChevronRight } from "lucide-react";
 
 import { toast } from "sonner";
 import AdminSidebar from "@/components/Admin/AdminSidebar";
 import AdminOverview from "@/components/Admin/AdminOverview";
 import { logout } from "@/firebase/auth/emailAuth";
 import { useNavigate } from "react-router-dom";
-import LiveIncident from "@/components/user/LiveIncident";
-import UserProfile from "@/components/user/Profile";
 import IncidentManagement from "@/components/Admin/IncidentManagement";
 import UserManagement from "@/components/Admin/UserManagement";
 import Analytics from "@/components/Admin/Analytics";
