@@ -87,9 +87,9 @@ export function Notification({ radiusKm = 5, onCountChange }) {
         <div className="text-muted-foreground text-sm">No nearby alerts.</div>
       ) : (
         <ul className="space-y-3">
-          {grouped.map((row) => (
+          {grouped.map((row, idx) => (
             <li
-              key={row.locKey}
+              key={`${row.locKey}|${row.incidentType}|${idx}`}
               className="flex flex-col gap-1 border-b pb-2 last:border-b-0"
             >
               <div className="flex items-center gap-2">

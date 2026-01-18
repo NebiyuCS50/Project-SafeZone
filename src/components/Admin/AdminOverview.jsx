@@ -116,9 +116,9 @@ export default function AdminOverview() {
         (r) => getTimestampMs(r.timestamp) >= sevenDaysAgo
       ).length;
       const verifiedReports = reports.filter(
-        (r) => r.status === "Resolved"
+        (r) => r.status === "resolved"
       ).length;
-      const fakeReports = reports.filter((r) => r.status === "Rejected").length;
+      const fakeReports = reports.filter((r) => r.status === "rejected").length;
       const pendingReports = reports.filter(
         (r) => r.status === "pending"
       ).length;
@@ -311,53 +311,49 @@ export default function AdminOverview() {
             {/* Risk Distribution */}
             <div className="space-y-3">
               <h4 className="text-sm font-medium">Risk Distribution</h4>
-              <div className="space-y-3">
-                {Object.entries(RISK_LEVELS).map(([key, level]) => {
-                  // Count alerts by risk level
-                  const count = stats.riskAlerts.filter(
-                    (alert) => alert.alertLevel === key
-                  ).length;
-                  // Calculate percentage (use total alerts)
-                  const totalAlerts = stats.riskAlerts.length || 1;
-                  const percentage = Math.round((count / totalAlerts) * 100);
+              {Object.entries(RISK_LEVELS).map(([key, level]) => {
+                // Count alerts by risk level
+                const count = stats.riskAlerts.filter(
+                  (alert) => alert.alertLevel === key
+                ).length;
+                // Calculate percentage (use total alerts)
+                const totalAlerts = stats.riskAlerts.length || 1;
+                const percentage = Math.round((count / totalAlerts) * 100);
 
-                  return (
-                    <div key={key} className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-3 h-3 rounded-full border-2 ${
-                              key === "high"
-                                ? "bg-orange-500 border-orange-700"
-                                : key === "medium"
-                                ? "bg-yellow-500 border-yellow-700"
-                                : "bg-green-500 border-green-700"
-                            }`}
-                          />
-                          <span className="text-sm font-medium">
-                            {level.label}
-                          </span>
-                        </div>
-                        <span className="text-sm font-bold">
-                          {count} alerts
+                return (
+                  <div key={key} className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-3 h-3 rounded-full border-2 ${
+                            key === "high"
+                              ? "bg-orange-500 border-orange-700"
+                              : key === "medium"
+                              ? "bg-yellow-500 border-yellow-700"
+                              : "bg-green-500 border-green-700"
+                          }`}
+                        />
+                        <span className="text-sm font-medium">
+                          {level.label}
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full ${
-                            key === "high"
-                              ? "bg-orange-500"
-                              : key === "medium"
-                              ? "bg-yellow-500"
-                              : "bg-green-500"
-                          }`}
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
+                      <span className="text-sm font-bold">{count} alerts</span>
                     </div>
-                  );
-                })}
-              </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          key === "high"
+                            ? "bg-orange-500"
+                            : key === "medium"
+                            ? "bg-yellow-500"
+                            : "bg-green-500"
+                        }`}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Risk Metrics */}
@@ -530,16 +526,18 @@ export default function AdminOverview() {
           value={stats.verifiedReports}
           subtitle={`${Math.round(
             stats.trendData.verificationRate * 100
-          )}% verification rate`}
+          )}% resolve rate`}
           icon={CheckCircle}
           trend="up"
           color="default"
         />
 
         <StatCard
-          title="Fake Reports"
+          title="Reject Reports"
           value={stats.fakeReports}
-          subtitle={`${Math.round(stats.trendData.fakeRate * 100)}% fake rate`}
+          subtitle={`${Math.round(
+            stats.trendData.fakeRate * 100
+          )}% reject rate`}
           icon={XCircle}
           trend="down"
           color="default"

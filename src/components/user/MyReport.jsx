@@ -56,9 +56,18 @@ const INCIDENT_TYPES = {
   other: { label: "Other", color: "secondary" },
 };
 const STATUSES = {
-  pending: { label: "Pending", color: "secondary" },
-  resolved: { label: "Resolved", color: "success" },
-  rejected: { label: "Rejected", color: "destructive" },
+  pending: {
+    label: "Pending",
+    className: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  },
+  resolved: {
+    label: "Resolved",
+    className: "bg-green-100 text-green-800 border-green-200",
+  },
+  rejected: {
+    label: "Rejected",
+    className: "bg-red-100 text-red-800 border-red-200",
+  },
 };
 
 function groupByTypeAndLocation(reports) {
@@ -363,8 +372,9 @@ export default function IncidentReportsTable() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={
-                            STATUSES[report.status]?.color || "secondary"
+                          className={
+                            STATUSES[report.status]?.className ||
+                            "bg-gray-100 text-gray-800"
                           }
                         >
                           {STATUSES[report.status]?.label || report.status}
@@ -497,8 +507,9 @@ export default function IncidentReportsTable() {
                   </label>
                   <div className="mt-1">
                     <Badge
-                      variant={
-                        STATUSES[selectedReport.status]?.color || "secondary"
+                      className={
+                        STATUSES[selectedReport.status]?.className ||
+                        "bg-gray-100 text-gray-800"
                       }
                     >
                       {STATUSES[selectedReport.status]?.label ||

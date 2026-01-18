@@ -34,6 +34,7 @@ export async function signUp(
       phoneNumber,
       role,
       createdAt: Date.now(),
+      isActive: true,
     });
   } catch (error) {
     console.error("Error writing user document: ", error);

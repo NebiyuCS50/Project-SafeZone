@@ -126,7 +126,7 @@ export default function UserProfile() {
   const getTrustScore = () => {
     const total = userReports.length;
     if (total === 0) return 0;
-    const verified = userReports.filter((r) => r.status === "Resolved").length;
+    const verified = userReports.filter((r) => r.status === "resolved").length;
     const pending = userReports.filter((r) => r.status === "pending").length;
     return ((verified + 0.5 * pending) / total) * 5;
   };
@@ -188,7 +188,7 @@ export default function UserProfile() {
   const trustScore = getTrustScore();
   const totalReports = userReports.length;
   const verifiedReports = userReports.filter(
-    (r) => r.status === "Resolved"
+    (r) => r.status === "resolved"
   ).length;
   const pendingReports = userReports.filter(
     (r) => r.status === "pending"
@@ -331,7 +331,7 @@ export default function UserProfile() {
               <div className="text-2xl font-bold text-green-600">
                 {verifiedReports}
               </div>
-              <div className="text-sm text-muted-foreground">Verified</div>
+              <div className="text-sm text-muted-foreground">Resolved</div>
             </div>
             <div className="text-center p-4 bg-yellow-50 rounded-lg">
               <div className="text-2xl font-bold text-yellow-600">
