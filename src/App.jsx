@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect } from "react"; 
 import { auth, db } from "@/firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
 import { logout, isSessionExpired } from "@/firebase/auth/emailAuth";
 import { toast } from "sonner";
+
 
 export default function AuthListener({ children }) {
   const { setUser, setRole, setLoading } = useAuthStore();
@@ -57,3 +58,4 @@ export default function AuthListener({ children }) {
 
   return children;
 }
+

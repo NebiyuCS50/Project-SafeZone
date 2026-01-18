@@ -10,6 +10,10 @@ import NotFound from "@/pages/NotFound";
 import { RequireAdmin } from "@/components/auth/requireAdmin";
 import { RequireAuth } from "@/components/auth/requireLogin";
 
+import { MapVisualization } from "@/components/user/MapVisualization";
+import { Layout } from "lucide-react";
+import { Children } from "react";
+
 const routes = [
   {
     path: "/",
@@ -58,6 +62,10 @@ const routes = [
   {
     path: "*",
     element: <NotFound />,
+  },
+  {
+    path: "/map",
+    element: <MapVisualization />,
   },
 ];
 
