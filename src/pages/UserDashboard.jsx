@@ -76,14 +76,6 @@ export default function Dashboard() {
       case "map":
         return (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Map Visualization
-              </h2>
-              <p className="text-gray-600">
-                Real-time incident mapping and safe route planning
-              </p>
-            </div>
             <MapVisualization />
           </div>
         );
