@@ -12,10 +12,23 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { login } from "@/firebase/auth/emailAuth";
 import fetchUserData from "@/utils/user";
+import { signInWithGoogle } from "@/firebase/auth/googleAuth";
 
 export function LoginForm({ className, ...props }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const handleGoogleAuth = async () => {
+    try {
+      await signInWithGoogle();
+      // Optionally show a toast or redirect
+      toast.success("Signed in with Google!");
+      navigate("/userdashboard"); // or wherever you want to go after login/signup
+    } catch (err) {
+      toast.error("Google sign-in failed", {
+        description: err.message,
+      });
+    }
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -91,6 +104,7 @@ export function LoginForm({ className, ...props }) {
             variant="outline"
             type="button"
             className="flex items-center gap-2"
+            onClick={handleGoogleAuth}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
