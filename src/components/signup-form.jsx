@@ -13,6 +13,7 @@ import { signUp } from "@/firebase/auth/emailAuth";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SignupSchema } from "@/validation/signupSchema";
+import { signInWithGoogle } from "@/firebase/auth/googleAuth";
 
 export function SignupForm({ className, ...props }) {
   const navigate = useNavigate();
@@ -32,6 +33,18 @@ export function SignupForm({ className, ...props }) {
     },
   });
 
+  const handleGoogleAuth = async () => {
+    try {
+      await signInWithGoogle();
+      // Optionally show a toast or redirect
+      toast.success("Signed in with Google!");
+      navigate("/userdashboard"); // or wherever you want to go after login/signup
+    } catch (err) {
+      toast.error("Google sign-in failed", {
+        description: err.message,
+      });
+    }
+  };
   const onSubmit = async (values) => {
     if (loading) return;
 
@@ -42,7 +55,7 @@ export function SignupForm({ className, ...props }) {
         values.email,
         values.password,
         "user",
-        values.phoneNumber
+        values.phoneNumber,
       );
       console.log("User signed up successfully");
 
@@ -197,6 +210,7 @@ export function SignupForm({ className, ...props }) {
               variant="outline"
               type="button"
               className="w-full flex items-center justify-center gap-3 py-2"
+              onClick={handleGoogleAuth}
             >
               {/* GOOGLE ICON */}
               <svg
