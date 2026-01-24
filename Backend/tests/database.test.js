@@ -1,4 +1,4 @@
-import { ReportDatabase } from '../services/firestore.js';
+const { ReportDatabase } = require('../services/firestore.js');
 
 // Mock Firebase Admin
 jest.mock('firebase-admin', () => ({
@@ -143,131 +143,20 @@ describe('ReportDatabase', () => {
         });
     });
 
-    describe('addValidationAttempt', () => {
-        test('should add validation attempt to history', async () => {
-            // Setup
-            const existingHistory = [
-                { attemptNumber: 1, score: 60, timestamp: 'time1' }
-            ];
 
-            mockDocRef.get.mockResolvedValue({
-                exists: true,
-                data: () => ({
-                    validationHistory: existingHistory
-                })
-            });
-            mockDocRef.update.mockResolvedValue();
-
-            const validationResult = {
-                score: 75,
-                reason: 'Improved report'
-            };
-
-            // Execute
-            const result = await database.addValidationAttempt(testReportId, validationResult);
-
-            // Verify
-            expect(result.attemptNumber).toBe(2);
-            expect(result.score).toBe(75);
-            expect(mockDocRef.update).toHaveBeenCalledWith({
-                validationHistory: expect.arrayContaining([
-                    ...existingHistory,
-                    expect.objectContaining({
-                        attemptNumber: 2,
-                        score: 75,
-                        reason: 'Improved report'
-                    })
-                ]),
-                lastValidationAttempt: expect.any(Object)
-            });
-        });
-
-        test('should handle reports with no existing history', async () => {
-            // Setup
-            mockDocRef.get.mockResolvedValue({
-                exists: true,
-                data: () => ({}) // No validationHistory
-            });
-            mockDocRef.update.mockResolvedValue();
-
-            const validationResult = {
-                score: 80,
-                reason: 'Good report'
-            };
-
-            // Execute
-            const result = await database.addValidationAttempt(testReportId, validationResult);
-
-            // Verify
-            expect(result.attemptNumber).toBe(1);
-        });
-    });
-
-    describe('forwardToAdminReview', () => {
-        test('should move report to incidents collection', async () => {
-            // Setup
-            const reportData = {
-                ...testReportData,
-                id: testReportId
-            };
-
-            mockDocRef.get.mockResolvedValue({
-                exists: true,
-                data: () => reportData
-            });
-
-            const mockIncidentsDocRef = {
-                set: jest.fn().mockResolvedValue()
-            };
-            const mockIncidentsCollection = {
-                doc: jest.fn(() => mockIncidentsDocRef)
-            };
-
-            // Mock the incidents collection call
-            const mockFirestore = admin.firestore();
-            mockFirestore.collection.mockImplementation((name) => {
-                if (name === 'incidents') return mockIncidentsCollection;
-                return mockCollection;
-            });
-
-            // Execute
-            const result = await database.forwardToAdminReview(testReportId);
-
-            // Verify
-            expect(result).toBe(testReportId);
-            expect(mockIncidentsDocRef.set).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    ...reportData,
-                    status: 'pending_admin_review',
-                    source: 'ai_validation_rejected'
-                })
-            );
-        });
-
-        test('should throw error for non-existent report', async () => {
-            // Setup
-            mockDocRef.get.mockResolvedValue({
-                exists: false
-            });
-
-            // Execute & Verify
-            await expect(database.forwardToAdminReview(testReportId))
-                .rejects.toThrow(`Report ${testReportId} not found`);
-        });
-    });
 
     describe('getValidationStats', () => {
         test('should calculate validation statistics', async () => {
             // Setup
             const mockSnapshot = {
                 forEach: jest.fn((callback) => {
-                    // Simulate 5 documents with different statuses
+                    // Simulate 5 documents with different statuses and scores
                     const docs = [
-                        { data: () => ({ status: 'accepted' }) },
-                        { data: () => ({ status: 'accepted' }) },
-                        { data: () => ({ status: 'rejected' }) },
-                        { data: () => ({ status: 'forwarded_to_admin' }) },
-                        { data: () => ({ status: 'pending' }) }
+                        { data: () => ({ status: 'pending_admin_review', qualityScore: 80 }) },
+                        { data: () => ({ status: 'pending_admin_review', qualityScore: 60 }) },
+                        { data: () => ({ status: 'pending_admin_review', qualityScore: undefined }) },
+                        { data: () => ({ status: 'reviewed', qualityScore: 75 }) },
+                        { data: () => ({ status: 'reviewed', qualityScore: 65 }) }
                     ];
                     docs.forEach(callback);
                 })
@@ -280,10 +169,14 @@ describe('ReportDatabase', () => {
 
             // Verify
             expect(stats.totalReports).toBe(5);
-            expect(stats.acceptedReports).toBe(2);
-            expect(stats.rejectedReports).toBe(1);
-            expect(stats.forwardedReports).toBe(1);
-            expect(stats.acceptanceRate).toBe(40); // 2/5 * 100
+            expect(stats.pendingReview).toBe(3);
+            expect(stats.reviewedReports).toBe(2);
+            expect(stats.averageScore).toBe(70); // (80+60)/2
+            expect(stats.qualityDistribution).toEqual({
+                high: 1, // >= 80
+                medium: 1, // 60-79
+                low: 0 // < 60
+            });
         });
     });
 });

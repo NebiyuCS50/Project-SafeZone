@@ -1,13 +1,15 @@
 # AI Report Validation Service
 
-A self-contained, testable AI validation service for incident reports that can decide whether a report is valid, reject it with feedback up to 3 times, and only then forward it to Firebase for admin review.
+A self-contained, testable AI validation service for incident reports with Cloudinary integration. Reports are evaluated for quality using AI analysis of images, descriptions, and categories, then stored for admin review with comprehensive scoring.
 
 ## Features
 
-- 🤖 **AI-Powered Validation**: Uses OpenAI GPT-4o-mini to analyze report consistency, completeness, and realism
-- 🔄 **Retry Logic**: Allows users to improve and resubmit reports up to 3 times
-- 🛡️ **Security**: No secrets exposed to frontend, all AI logic contained server-side
-- 📊 **Comprehensive Testing**: Full unit test coverage with Jest
+- 🖼️ **Cloudinary Integration**: Automatic image upload, optimization, and AI analysis
+- 🤖 **AI-Powered Scoring**: Comprehensive quality evaluation using OpenAI GPT-4o-mini
+- 📊 **Quality Metrics**: Detailed scoring breakdown (image, description, category)
+- 🛡️ **Single Submission**: All reports accepted and scored for admin review
+- 🔒 **Secure**: No secrets exposed to frontend, all processing server-side
+- 📈 **Analytics**: Quality distribution tracking and reporting
 - 🔍 **Monitoring**: Health checks and validation statistics
 - 🏗️ **Modular Architecture**: Separated concerns for easy maintenance and testing
 
@@ -50,7 +52,38 @@ A self-contained, testable AI validation service for incident reports that can d
 
 ## API Endpoints
 
-### Validate Report
+### Core Endpoints
+```http
+POST /api/upload-image
+Content-Type: multipart/form-data
+
+Form Data:
+- image: [image file]
+- folder: (optional) [custom folder name]
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "url": "https://res.cloudinary.com/project/image.jpg",
+    "publicId": "safezone/incidents/1640995200-image",
+    "width": 1920,
+    "height": 1080,
+    "format": "jpg",
+    "bytes": 245760,
+    "analysis": {
+      "quality": "high",
+      "contentType": "incident",
+      "tags": ["road", "accident", "vehicle"],
+      "facesDetected": 0
+    }
+  }
+}
+```
+
+### Validate and Store Report
 ```http
 POST /api/validate-report
 Content-Type: application/json
@@ -64,46 +97,31 @@ Content-Type: application/json
     "lng": 38.76
   },
   "timestamp": 1640995200000,
-  "userId": "user-123"
+  "userId": "user-123",
+  "imageUrl": "https://res.cloudinary.com/project/image.jpg"
 }
 ```
 
-**Response (Accepted):**
+**Response (Submitted for Review):**
 ```json
 {
   "success": true,
-  "action": "accepted",
+  "action": "submitted_for_review",
   "score": 85,
-  "attempts": 1,
-  "message": "Report accepted successfully",
-  "reason": "Report is detailed and consistent"
-}
-```
-
-**Response (Rejected - Can Retry):**
-```json
-{
-  "success": false,
-  "action": "rejected",
-  "score": 45,
-  "attempts": 1,
-  "maxAttempts": 3,
-  "message": "Report rejected. 2 attempts remaining.",
-  "reason": "Description is too vague",
-  "suggestions": ["Add more details about the incident"],
-  "canRetry": true
-}
-```
-
-**Response (Forwarded to Admin):**
-```json
-{
-  "success": false,
-  "action": "forwarded_to_admin",
-  "attempts": 3,
-  "maxAttempts": 3,
-  "message": "Maximum validation attempts exceeded. Report forwarded to admin for manual review.",
-  "canRetry": false
+  "breakdown": {
+    "imageScore": 28,
+    "descriptionScore": 35,
+    "categoryScore": 22
+  },
+  "message": "Report submitted successfully and is pending admin review",
+  "reason": "Report demonstrates good quality across all criteria",
+  "recommendations": ["Consider adding more specific location details"],
+  "confidence": 0.9,
+  "cloudinaryAnalysis": {
+    "quality": "high",
+    "contentType": "incident",
+    "tags": ["road", "accident", "vehicle"]
+  }
 }
 ```
 
@@ -117,29 +135,72 @@ GET /api/health
 GET /api/validation-stats
 ```
 
-### Report History
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalReports": 150,
+    "pendingReview": 45,
+    "reviewedReports": 105,
+    "averageScore": 72.5,
+    "qualityDistribution": {
+      "high": 65,    // >= 80
+      "medium": 35,  // 60-79
+      "low": 5       // < 60
+    }
+  }
+}
+```
+
+### Report Details
 ```http
-GET /api/report-history?reportId=unique-report-id
+GET /api/report-details?reportId=unique-report-id
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "unique-report-id",
+    "incidentType": "accident",
+    "description": "Car accident on Bole Road",
+    "location": { "lat": 9.01, "lng": 38.76 },
+    "imageUrl": "https://res.cloudinary.com/project/image.jpg",
+    "qualityScore": 85,
+    "scoreBreakdown": {
+      "imageScore": 28,
+      "descriptionScore": 35,
+      "categoryScore": 22
+    },
+    "aiReason": "Report demonstrates good quality across all criteria",
+    "aiRecommendations": ["Consider adding more specific location details"],
+    "aiConfidence": 0.9,
+    "status": "pending_admin_review",
+    "validatedAt": "2024-01-15T10:30:00Z"
+  }
+}
 ```
 
 ## Architecture
 
 ### Services
 
-- **`AIValidator`**: Handles all OpenAI interactions and response parsing
-- **`ReportValidator`**: Main orchestration service with rejection logic
-- **`ReportDatabase`**: Abstracts Firebase operations
+- **`AIValidator`**: Handles all OpenAI interactions and response parsing with Cloudinary analysis
+- **`ReportValidator`**: Main orchestration service for quality scoring
+- **`ReportDatabase`**: Abstracts Firebase operations for report storage
+- **`CloudinaryService`**: Manages image uploads, optimization, and AI analysis
 - **`EnvironmentConfig`**: Validates and provides environment variables
 
 ### Validation Flow
 
-1. **Input Validation**: Check required fields and data formats
-2. **AI Analysis**: Send report to OpenAI for consistency scoring
-3. **Decision Logic**:
-   - Score ≥ 70: Accept report
-   - Score < 70: Reject with feedback
-   - After 3 rejections: Forward to admin review
-4. **Database Updates**: Store validation history and status
+1. **Image Upload**: Upload image to Cloudinary with AI analysis
+2. **Input Validation**: Check required fields and Cloudinary URLs
+3. **AI Analysis**: Evaluate report quality using OpenAI with Cloudinary insights
+4. **Quality Scoring**: Generate comprehensive score (0-100) with breakdown
+5. **Admin Storage**: Store scored report for administrator review
+6. **Response**: Return quality score and recommendations to user
 
 ### Security Considerations
 
@@ -153,13 +214,24 @@ GET /api/report-history?reportId=unique-report-id
 
 All configuration is done via environment variables. See `.env.example` for all available options.
 
-### Key Settings
+### Required Settings
+
+| Variable | Description |
+|----------|-------------|
+| `OPENAI_API_KEY` | OpenAI API key for AI validation |
+| `FIREBASE_PROJECT_ID` | Firebase project ID |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
+
+### Optional Settings
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `VALIDATION_MAX_ATTEMPTS` | 3 | Maximum retry attempts before forwarding to admin |
-| `VALIDATION_PASS_THRESHOLD` | 70 | Minimum score required for acceptance |
 | `OPENAI_MODEL` | gpt-4o-mini | AI model to use for validation |
+| `CLOUDINARY_UPLOAD_PRESET` | safezone_reports | Cloudinary upload preset |
+| `CLOUDINARY_FOLDER` | safezone/incidents | Cloudinary upload folder |
+| `PORT` | 3001 | Server port |
 | `OPENAI_TEMPERATURE` | 0.3 | AI creativity level (lower = more consistent) |
 
 ## Testing
@@ -214,9 +286,9 @@ Backend/
 
 The service provides several monitoring endpoints:
 
-- **Health Check**: `/api/health` - AI service and database connectivity
-- **Statistics**: `/api/validation-stats` - Acceptance rates and totals
-- **Report History**: `/api/report-history` - Individual report validation attempts
+- **Health Check**: `/api/health` - AI, Cloudinary, and database connectivity
+- **Statistics**: `/api/validation-stats` - Quality scores and distribution
+- **Report Details**: `/api/report-details` - Individual report information with scores
 
 ## Deployment
 

@@ -1,7 +1,23 @@
 import cors from "cors";
+import multer from "multer";
 import { reportValidator } from "../services/reportValidator.js";
 
 const corsHandler = cors({ origin: true });
+
+// Configure multer for image uploads
+const upload = multer({
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB limit
+    },
+    fileFilter: (req, file, cb) => {
+        // Check if file is an image
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed'));
+        }
+    }
+});
 
 export default async function handler(req, res) {
   await new Promise((resolve) => corsHandler(req, res, resolve));
@@ -99,7 +115,7 @@ export async function getValidationStats(req, res) {
   }
 }
 
-export async function getReportHistory(req, res) {
+export async function getReportDetails(req, res) {
   await new Promise((resolve) => corsHandler(req, res, resolve));
 
   if (req.method !== "GET") {
@@ -119,19 +135,89 @@ export async function getReportHistory(req, res) {
   }
 
   try {
-    const history = await reportValidator.getReportHistory(reportId);
+    const { database } = reportValidator;
+    const report = await database.getReport(reportId);
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          type: "NOT_FOUND",
+          message: "Report not found"
+        }
+      });
+    }
+
     return res.status(200).json({
       success: true,
-      data: history
+      data: report
     });
   } catch (error) {
-    console.error('History Error:', error);
+    console.error('Report Details Error:', error);
     return res.status(500).json({
       success: false,
       error: {
-        type: "HISTORY_ERROR",
-        message: "Failed to retrieve report history"
+        type: "REPORT_ERROR",
+        message: "Failed to retrieve report details"
       }
     });
   }
 }
+
+/**
+ * Upload image to Cloudinary
+ */
+export const uploadImage = [
+    corsHandler,
+    upload.single('image'),
+    async (req, res) => {
+        try {
+            if (!req.file) {
+                return res.status(400).json({
+                    success: false,
+                    error: {
+                        type: "NO_FILE",
+                        message: "No image file provided"
+                    }
+                });
+            }
+
+            // Upload to Cloudinary
+            const result = await reportValidator.cloudinary.uploadImage(
+                req.file.buffer,
+                req.file.originalname,
+                {
+                    // Add any additional options based on request
+                    ...(req.body.folder && { folder: req.body.folder })
+                }
+            );
+
+            return res.status(200).json({
+                success: true,
+                data: {
+                    url: result.url,
+                    publicId: result.publicId,
+                    width: result.width,
+                    height: result.height,
+                    format: result.format,
+                    bytes: result.bytes,
+                    analysis: {
+                        quality: result.analysis.quality,
+                        contentType: result.analysis.contentType,
+                        tags: result.analysis.tags.slice(0, 10), // Limit tags
+                        facesDetected: result.analysis.faces.length
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Image Upload Error:', error);
+            return res.status(500).json({
+                success: false,
+                error: {
+                    type: "UPLOAD_ERROR",
+                    message: error.message
+                }
+            });
+        }
+    }
+];

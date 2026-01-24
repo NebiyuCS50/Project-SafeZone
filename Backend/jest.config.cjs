@@ -18,7 +18,6 @@ module.exports = {
   setupFilesAfterEnv: [],
   testTimeout: 10000,
   verbose: true,
-  // ES Module support
   transformIgnorePatterns: [
     'node_modules/(?!(openai|firebase-admin)/)'
   ]

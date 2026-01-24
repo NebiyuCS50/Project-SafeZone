@@ -1,3 +1,8 @@
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
+
 /**
  * Environment Configuration
  * Validates and provides access to environment variables
@@ -102,6 +107,19 @@ class EnvironmentConfig {
             storageBucket: this.getOptional('FIREBASE_STORAGE_BUCKET'),
             messagingSenderId: this.getOptional('FIREBASE_MESSAGING_SENDER_ID'),
             appId: this.getOptional('FIREBASE_APP_ID')
+        };
+    }
+
+    /**
+     * Gets all Cloudinary-related configuration
+     */
+    getCloudinaryConfig() {
+        return {
+            cloudName: this.getRequired('CLOUDINARY_CLOUD_NAME'),
+            apiKey: this.getRequired('CLOUDINARY_API_KEY'),
+            apiSecret: this.getRequired('CLOUDINARY_API_SECRET'),
+            uploadPreset: this.getOptional('CLOUDINARY_UPLOAD_PRESET', 'safezone_reports'),
+            folder: this.getOptional('CLOUDINARY_FOLDER', 'safezone/incidents')
         };
     }
 

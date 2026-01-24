@@ -1,4 +1,4 @@
-import { AIValidator } from '../services/openai.js';
+const { AIValidator } = require('../services/openai.js');
 
 // Mock OpenAI client
 jest.mock('openai', () => {
@@ -61,7 +61,7 @@ describe('AIValidator', () => {
             mockOpenAIClient.chat.completions.create.mockResolvedValue(mockResponse);
 
             // Execute
-            const result = await validator.validateReport(testReport, 1);
+            const result = await validator.validateReport(testReport);
 
             // Verify
             expect(result.score).toBe(85);
@@ -77,7 +77,7 @@ describe('AIValidator', () => {
             );
 
             // Execute
-            const result = await validator.validateReport(testReport, 1);
+            const result = await validator.validateReport(testReport);
 
             // Verify - should return default values
             expect(result.score).toBe(50);
@@ -97,7 +97,7 @@ describe('AIValidator', () => {
             mockOpenAIClient.chat.completions.create.mockResolvedValue(mockResponse);
 
             // Execute
-            const result = await validator.validateReport(testReport, 1);
+            const result = await validator.validateReport(testReport);
 
             // Verify - should return default values
             expect(result.score).toBe(50);
@@ -125,16 +125,21 @@ describe('AIValidator', () => {
                 .rejects.toThrow('Invalid score in AI response');
         });
 
-        test('should include attempt context in prompt', async () => {
+        test('should include comprehensive scoring instructions in prompt', async () => {
             // Setup
             const mockResponse = {
                 choices: [{
                     message: {
                         content: JSON.stringify({
                             score: 75,
-                            reason: "Second attempt shows improvement",
+                            reason: "Good quality report",
                             confidence: 0.8,
-                            suggestions: []
+                            breakdown: {
+                                imageScore: 25,
+                                descriptionScore: 30,
+                                categoryScore: 20
+                            },
+                            recommendations: []
                         })
                     }
                 }]
@@ -142,11 +147,14 @@ describe('AIValidator', () => {
             mockOpenAIClient.chat.completions.create.mockResolvedValue(mockResponse);
 
             // Execute
-            await validator.validateReport(testReport, 2);
+            await validator.validateReport(testReport);
 
             // Verify
             const callArgs = mockOpenAIClient.chat.completions.create.mock.calls[0][0];
-            expect(callArgs.messages[0].content).toContain('attempt #2 of 3');
+            expect(callArgs.messages[0].content).toContain('comprehensive quality score');
+            expect(callArgs.messages[0].content).toContain('Image Quality (30 points)');
+            expect(callArgs.messages[0].content).toContain('Description Quality (40 points)');
+            expect(callArgs.messages[0].content).toContain('Category Appropriateness (30 points)');
         });
     });
 
@@ -161,11 +169,14 @@ describe('AIValidator', () => {
             expect(prompt).toMatch(/score.*number.*0-100/);
         });
 
-        test('should include attempt context for retries', () => {
-            const prompt = validator.buildValidationPrompt(testReport, 2);
+        test('should build comprehensive validation prompt', () => {
+            const prompt = validator.buildValidationPrompt(testReport);
 
-            expect(prompt).toContain('attempt #2 of 3');
-            expect(prompt).toContain('rejected previously');
+            expect(prompt).toContain('comprehensive quality score out of 100');
+            expect(prompt).toContain('Image Quality (30 points)');
+            expect(prompt).toContain('Description Quality (40 points)');
+            expect(prompt).toContain('Category Appropriateness (30 points)');
+            expect(prompt).toContain('breakdown');
         });
     });
 
@@ -175,7 +186,12 @@ describe('AIValidator', () => {
                 score: 80,
                 reason: "Valid report",
                 confidence: 0.9,
-                suggestions: ["Add more details"]
+                breakdown: {
+                    imageScore: 25,
+                    descriptionScore: 35,
+                    categoryScore: 20
+                },
+                recommendations: ["Add more details"]
             });
 
             const result = validator.parseAIResponse(validResponse);
@@ -183,7 +199,12 @@ describe('AIValidator', () => {
             expect(result.score).toBe(80);
             expect(result.reason).toBe("Valid report");
             expect(result.confidence).toBe(0.9);
-            expect(result.suggestions).toEqual(["Add more details"]);
+            expect(result.breakdown).toEqual({
+                imageScore: 25,
+                descriptionScore: 35,
+                categoryScore: 20
+            });
+            expect(result.recommendations).toEqual(["Add more details"]);
         });
 
         test('should handle JSON with markdown formatting', () => {
@@ -248,7 +269,12 @@ describe('AIValidator', () => {
                             score: 90,
                             reason: "Health check successful",
                             confidence: 1.0,
-                            suggestions: []
+                            breakdown: {
+                                imageScore: 28,
+                                descriptionScore: 38,
+                                categoryScore: 24
+                            },
+                            recommendations: []
                         })
                     }
                 }]

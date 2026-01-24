@@ -91,89 +91,8 @@ export class ReportDatabase {
         }
     }
 
-    /**
-     * Gets report validation history
-     * @param {string} reportId - The report ID
-     * @returns {Promise<Array>} Array of validation attempts
-     */
-    async getValidationHistory(reportId) {
-        try {
-            const docRef = this.db.collection(this.collection).doc(reportId);
-            const doc = await docRef.get();
 
-            if (!doc.exists) {
-                return [];
-            }
 
-            const data = doc.data();
-            return data.validationHistory || [];
-        } catch (error) {
-            console.error(`Error fetching validation history for ${reportId}:`, error);
-            return [];
-        }
-    }
-
-    /**
-     * Adds a validation attempt to the report history
-     * @param {string} reportId - The report ID
-     * @param {Object} validationResult - The validation result
-     */
-    async addValidationAttempt(reportId, validationResult) {
-        try {
-            const history = await this.getValidationHistory(reportId);
-            const attempt = {
-                timestamp: admin.firestore.FieldValue.serverTimestamp(),
-                attemptNumber: history.length + 1,
-                ...validationResult
-            };
-
-            history.push(attempt);
-
-            await this.updateReport(reportId, {
-                validationHistory: history,
-                lastValidationAttempt: attempt
-            });
-
-            return attempt;
-        } catch (error) {
-            console.error(`Error adding validation attempt for ${reportId}:`, error);
-            throw new Error(`Failed to save validation attempt: ${error.message}`);
-        }
-    }
-
-    /**
-     * Moves a report to the incidents collection for admin review
-     * @param {string} reportId - The report ID
-     */
-    async forwardToAdminReview(reportId) {
-        try {
-            const report = await this.getReport(reportId);
-            if (!report) {
-                throw new Error(`Report ${reportId} not found`);
-            }
-
-            // Move to incidents collection
-            const incidentData = {
-                ...report,
-                forwardedAt: admin.firestore.FieldValue.serverTimestamp(),
-                status: 'pending_admin_review',
-                source: 'ai_validation_rejected'
-            };
-
-            await this.db.collection('incidents').doc(reportId).set(incidentData);
-
-            // Update the original report status
-            await this.updateReport(reportId, {
-                status: 'forwarded_to_admin',
-                forwardedAt: admin.firestore.FieldValue.serverTimestamp()
-            });
-
-            return reportId;
-        } catch (error) {
-            console.error(`Error forwarding report ${reportId} to admin:`, error);
-            throw new Error(`Failed to forward report: ${error.message}`);
-        }
-    }
 
     /**
      * Gets statistics about the validation system
@@ -182,24 +101,39 @@ export class ReportDatabase {
         try {
             const snapshot = await this.db.collection(this.collection).get();
             let totalReports = 0;
-            let acceptedReports = 0;
-            let rejectedReports = 0;
-            let forwardedReports = 0;
+            let pendingReview = 0;
+            let reviewedReports = 0;
+            let averageScore = 0;
+            let highQualityReports = 0; // score >= 80
+            let mediumQualityReports = 0; // score >= 60
+            let lowQualityReports = 0; // score < 60
 
             snapshot.forEach(doc => {
                 const data = doc.data();
                 totalReports++;
-                if (data.status === 'accepted') acceptedReports++;
-                if (data.status === 'rejected') rejectedReports++;
-                if (data.status === 'forwarded_to_admin') forwardedReports++;
+
+                if (data.qualityScore !== undefined) {
+                    averageScore += data.qualityScore;
+
+                    if (data.qualityScore >= 80) highQualityReports++;
+                    else if (data.qualityScore >= 60) mediumQualityReports++;
+                    else lowQualityReports++;
+                }
+
+                if (data.status === 'pending_admin_review') pendingReview++;
+                if (data.status !== 'pending_admin_review') reviewedReports++;
             });
 
             return {
                 totalReports,
-                acceptedReports,
-                rejectedReports,
-                forwardedReports,
-                acceptanceRate: totalReports > 0 ? (acceptedReports / totalReports) * 100 : 0
+                pendingReview,
+                reviewedReports,
+                averageScore: totalReports > 0 ? averageScore / totalReports : 0,
+                qualityDistribution: {
+                    high: highQualityReports, // >= 80
+                    medium: mediumQualityReports, // 60-79
+                    low: lowQualityReports // < 60
+                }
             };
         } catch (error) {
             console.error('Error fetching validation stats:', error);

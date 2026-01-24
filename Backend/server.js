@@ -9,7 +9,10 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { config } from './config/environment.js';
-import validateReport, { healthCheck, getValidationStats, getReportHistory } from './api/validateReport.js';
+import validateReport, { healthCheck, getValidationStats, getReportDetails, uploadImage } from './api/validateReport.js';
+
+// Load environment variables
+dotenv.config();
 
 // Load environment variables
 dotenv.config();
@@ -39,8 +42,9 @@ app.get('/api/health', healthCheck);
 
 // Validation endpoints
 app.post('/api/validate-report', validateReport);
+app.post('/api/upload-image', uploadImage);
 app.get('/api/validation-stats', getValidationStats);
-app.get('/api/report-history', getReportHistory);
+app.get('/api/report-details', getReportDetails);
 
 // Root endpoint with API information
 app.get('/', (req, res) => {

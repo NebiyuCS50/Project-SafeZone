@@ -1,6 +1,6 @@
-import { ReportValidator } from '../services/reportValidator.js';
-import { AIValidator } from '../services/openai.js';
-import { ReportDatabase } from '../services/firestore.js';
+const { ReportValidator } = require('../services/reportValidator.js');
+const { AIValidator } = require('../services/openai.js');
+const { ReportDatabase } = require('../services/firestore.js');
 
 // Mock dependencies
 jest.mock('../services/openai');
@@ -17,7 +17,8 @@ describe('ReportValidator', () => {
         description: 'Car accident on Bole Road',
         location: { lat: 9.01, lng: 38.76 },
         timestamp: Date.now(),
-        userId: 'user-123'
+        userId: 'user-123',
+        imageUrl: 'https://res.cloudinary.com/project/image.jpg'
     };
 
     beforeEach(() => {
@@ -41,16 +42,19 @@ describe('ReportValidator', () => {
     });
 
     describe('validateReport', () => {
-        test('should accept a valid report with high AI score', async () => {
+        test('should accept and store any valid report for admin review', async () => {
             // Setup
-            mockDatabase.getReport.mockResolvedValue(null); // First attempt
             mockAIValidator.validateReport.mockResolvedValue({
                 score: 85,
                 reason: 'Report is valid and well-documented',
                 confidence: 0.9,
-                suggestions: []
+                breakdown: {
+                    imageScore: 28,
+                    descriptionScore: 35,
+                    categoryScore: 22
+                },
+                recommendations: []
             });
-            mockDatabase.addValidationAttempt.mockResolvedValue({});
             mockDatabase.saveReport.mockResolvedValue('test-report-123');
 
             // Execute
@@ -58,91 +62,50 @@ describe('ReportValidator', () => {
 
             // Verify
             expect(result.success).toBe(true);
-            expect(result.action).toBe('accepted');
+            expect(result.action).toBe('submitted_for_review');
             expect(result.score).toBe(85);
-            expect(result.attempts).toBe(1);
+            expect(result.breakdown).toEqual({
+                imageScore: 28,
+                descriptionScore: 35,
+                categoryScore: 22
+            });
             expect(mockDatabase.saveReport).toHaveBeenCalledWith(
                 'test-report-123',
                 expect.objectContaining({
-                    status: 'accepted',
-                    attempts: 1,
-                    finalScore: 85
+                    status: 'pending_admin_review',
+                    qualityScore: 85,
+                    scoreBreakdown: {
+                        imageScore: 28,
+                        descriptionScore: 35,
+                        categoryScore: 22
+                    }
                 })
             );
         });
 
-        test('should reject a report with low AI score on first attempt', async () => {
+        test('should store low-quality reports for admin review', async () => {
             // Setup
-            mockDatabase.getReport.mockResolvedValue(null);
             mockAIValidator.validateReport.mockResolvedValue({
                 score: 45,
                 reason: 'Description is too vague',
                 confidence: 0.8,
-                suggestions: ['Add more details about the incident']
+                breakdown: {
+                    imageScore: 15,
+                    descriptionScore: 18,
+                    categoryScore: 12
+                },
+                recommendations: ['Add more details about the incident']
             });
-            mockDatabase.addValidationAttempt.mockResolvedValue({});
             mockDatabase.saveReport.mockResolvedValue('test-report-123');
 
             // Execute
             const result = await validator.validateReport(validReport);
 
             // Verify
-            expect(result.success).toBe(false);
-            expect(result.action).toBe('rejected');
+            expect(result.success).toBe(true);
+            expect(result.action).toBe('submitted_for_review');
             expect(result.score).toBe(45);
-            expect(result.attempts).toBe(1);
-            expect(result.canRetry).toBe(true);
-            expect(result.suggestions).toContain('Add more details about the incident');
-        });
-
-        test('should forward to admin after 3 failed attempts', async () => {
-            // Setup - Third attempt
-            mockDatabase.getReport.mockResolvedValue({
-                attempts: 2,
-                status: 'rejected'
-            });
-            mockAIValidator.validateReport.mockResolvedValue({
-                score: 50,
-                reason: 'Still insufficient detail',
-                confidence: 0.7,
-                suggestions: ['Please provide more specific information']
-            });
-            mockDatabase.addValidationAttempt.mockResolvedValue({});
-            mockDatabase.saveReport.mockResolvedValue('test-report-123');
-            mockDatabase.forwardToAdminReview.mockResolvedValue('test-report-123');
-
-            // Execute
-            const result = await validator.validateReport(validReport);
-
-            // Verify
-            expect(result.success).toBe(false);
-            expect(result.action).toBe('forwarded_to_admin');
-            expect(result.attempts).toBe(3);
-            expect(result.canRetry).toBe(false);
-            expect(mockDatabase.forwardToAdminReview).toHaveBeenCalledWith('test-report-123');
-        });
-
-        test('should handle existing report with previous attempts', async () => {
-            // Setup - Second attempt
-            mockDatabase.getReport.mockResolvedValue({
-                attempts: 1,
-                status: 'rejected'
-            });
-            mockAIValidator.validateReport.mockResolvedValue({
-                score: 75,
-                reason: 'Improved but still needs work',
-                confidence: 0.8,
-                suggestions: []
-            });
-            mockDatabase.addValidationAttempt.mockResolvedValue({});
-            mockDatabase.saveReport.mockResolvedValue('test-report-123');
-
-            // Execute
-            const result = await validator.validateReport(validReport);
-
-            // Verify
-            expect(result.attempts).toBe(2);
-            expect(mockAIValidator.validateReport).toHaveBeenCalledWith(validReport, 2);
+            expect(result.recommendations).toContain('Add more details about the incident');
         });
     });
 
@@ -165,6 +128,34 @@ describe('ReportValidator', () => {
 
             expect(() => validator.validateReportInput(invalidReport))
                 .toThrow('Report must have an incident type');
+        });
+
+        test('should reject report without image URL', () => {
+            const invalidReport = { ...validReport };
+            delete invalidReport.imageUrl;
+
+            expect(() => validator.validateReportInput(invalidReport))
+                .toThrow('Report must include an image URL');
+        });
+
+        test('should reject report with non-Cloudinary image URL', () => {
+            const invalidReport = {
+                ...validReport,
+                imageUrl: 'https://example.com/image.jpg'
+            };
+
+            expect(() => validator.validateReportInput(invalidReport))
+                .toThrow('Image must be hosted on Cloudinary');
+        });
+
+        test('should reject report with invalid image URL format', () => {
+            const invalidReport = {
+                ...validReport,
+                imageUrl: 'not-a-url'
+            };
+
+            expect(() => validator.validateReportInput(invalidReport))
+                .toThrow('Image URL must be a valid URL');
         });
 
         test('should reject report with invalid location', () => {

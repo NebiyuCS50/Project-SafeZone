@@ -17,12 +17,12 @@ export class AIValidator {
     /**
      * Validates a report using AI analysis
      * @param {Object} report - The report to validate
-     * @param {number} attemptNumber - Current attempt number (1-3)
-     * @returns {Promise<Object>} Validation result with score and feedback
+     * @param {Object} cloudinaryAnalysis - Optional Cloudinary analysis results
+     * @returns {Promise<Object>} Validation result with score and breakdown
      */
-    async validateReport(report, attemptNumber = 1) {
+    async validateReport(report, cloudinaryAnalysis = null) {
         try {
-            const prompt = this.buildValidationPrompt(report, attemptNumber);
+            const prompt = this.buildValidationPrompt(report, cloudinaryAnalysis);
             const response = await this.openai.chat.completions.create({
                 model: this.model,
                 messages: [{ role: "user", content: prompt }],
@@ -41,9 +41,14 @@ export class AIValidator {
             // Return a default validation result if AI fails
             return {
                 score: 50, // Neutral score when AI fails
-                reason: "Unable to validate report due to technical issues. Please try again.",
+                reason: "Unable to validate report due to technical issues.",
                 confidence: 0.5,
-                suggestions: ["Please ensure all fields are filled accurately"]
+                breakdown: {
+                    imageScore: 15,
+                    descriptionScore: 20,
+                    categoryScore: 15
+                },
+                recommendations: ["Please ensure all fields are filled accurately"]
             };
         }
     }
@@ -51,40 +56,67 @@ export class AIValidator {
     /**
      * Builds the validation prompt for the AI
      */
-    buildValidationPrompt(report, attemptNumber) {
-        const attemptContext = attemptNumber > 1
-            ? `This is attempt #${attemptNumber} of 3. The report has been rejected previously.`
-            : "This is the first validation attempt.";
+    buildValidationPrompt(report, cloudinaryAnalysis = null) {
+        const cloudinaryContext = cloudinaryAnalysis ? `
+
+CLOUDINARY IMAGE ANALYSIS:
+${JSON.stringify(cloudinaryAnalysis, null, 2)}
+
+Use this Cloudinary data to inform your image quality assessment:
+- AI tags help determine content relevance
+- Quality metrics indicate image clarity
+- Content type classification shows if image matches incident type
+- Moderation status indicates if content is appropriate` : `
+
+NO CLOUDINARY ANALYSIS AVAILABLE:
+- Image URL is provided but detailed analysis not available
+- Assess image quality based on URL format and description context only`;
 
         return `You are an expert incident report validation system for Addis Ababa safety reports.
 
-${attemptContext}
+Your task is to analyze the incident report and provide a comprehensive quality score out of 100.
 
-Your task is to analyze the incident report for:
-1. **Consistency**: Do the details make logical sense together?
-2. **Completeness**: Are all required fields properly filled?
-3. **Realism**: Is this a plausible incident based on location and description?
-4. **Safety**: Does this represent a genuine safety concern?
+Evaluate the following aspects:
+
+1. **Image Quality (30 points)**:
+   - Is there a valid Cloudinary image URL?
+   - Does the image appear to be relevant to the incident?
+   - Is the image clear and properly oriented?
+   - Consider Cloudinary AI analysis if available (tags, quality, content type)
+
+2. **Description Quality (40 points)**:
+   - Is the description detailed and specific?
+   - Does it clearly explain what happened?
+   - Is the language clear and professional?
+   - Does it include relevant details (time, location context, severity)?
+
+3. **Category Appropriateness (30 points)**:
+   - Does the incident type accurately match the description?
+   - Is the category appropriate for the reported incident?
+   - Does it align with safety reporting standards?
 
 REPORT DETAILS:
-${JSON.stringify(report, null, 2)}
+${JSON.stringify(report, null, 2)}${cloudinaryContext}
 
-VALIDATION CRITERIA:
+ADDITIONAL CONTEXT:
 - Location should be in Addis Ababa area (coordinates roughly 8.9-9.1°N, 38.7-38.9°E)
-- Description should be detailed enough to understand the incident
-- Incident type should match the description
 - Date/time should be reasonable (not future-dated)
-- Image URL should be valid if provided
+- Image URL should be from Cloudinary (cloudinary.com in URL)
 
 RESPONSE FORMAT (return ONLY valid JSON):
 {
-  "score": number (0-100, where 70+ = pass, below = fail),
-  "reason": "Brief explanation of validation decision",
+  "score": number (0-100, overall quality score),
+  "reason": "Brief explanation of the scoring decision",
   "confidence": number (0-1, how confident you are in this assessment),
-  "suggestions": ["Array of specific improvement suggestions if rejected"]
+  "breakdown": {
+    "imageScore": number (0-30),
+    "descriptionScore": number (0-40),
+    "categoryScore": number (0-30)
+  },
+  "recommendations": ["Array of suggestions for improvement"]
 }
 
-Be strict but fair. Valid reports should receive 70+ scores.`;
+Provide a fair and comprehensive evaluation. This score will be used by administrators to review and prioritize reports.`;
     }
 
     /**
@@ -135,7 +167,7 @@ Be strict but fair. Valid reports should receive 70+ scores.`;
                 timestamp: Date.now()
             };
 
-            const result = await this.validateReport(testReport, 1);
+            const result = await this.validateReport(testReport);
             return {
                 status: "healthy",
                 score: result.score,

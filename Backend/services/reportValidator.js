@@ -1,57 +1,81 @@
 import { AIValidator } from './openai.js';
 import { ReportDatabase } from './firestore.js';
+import { cloudinaryService } from './cloudinary.js';
 
 /**
  * Report Validator Service
- * Main service that orchestrates report validation with AI and manages rejection logic
+ * Main service that orchestrates report validation with AI and stores scores for admin review
  */
 export class ReportValidator {
-    constructor(aiValidator = new AIValidator(), database = new ReportDatabase()) {
+    constructor(aiValidator = new AIValidator(), database = new ReportDatabase(), cloudinary = cloudinaryService) {
         this.aiValidator = aiValidator;
         this.database = database;
-        this.maxAttempts = 3;
-        this.passThreshold = 70; // Score threshold for acceptance
+        this.cloudinary = cloudinary;
     }
 
     /**
-     * Validates a report and manages the rejection/acceptance flow
+     * Validates a report and stores the quality score for admin review
      * @param {Object} report - The report to validate
-     * @returns {Promise<Object>} Validation result
+     * @returns {Promise<Object>} Validation result with score
      */
     async validateReport(report) {
         try {
             // Validate input
             this.validateReportInput(report);
 
-            // Get current report state from database
-            const existingReport = await this.database.getReport(report.id);
-
-            // Determine attempt number
-            const attemptNumber = existingReport
-                ? (existingReport.attempts || 0) + 1
-                : 1;
-
-            // Check if we've exceeded max attempts
-            if (attemptNumber > this.maxAttempts) {
-                return await this.handleMaxAttemptsExceeded(report);
+            // Analyze image with Cloudinary if available
+            let cloudinaryAnalysis = null;
+            if (report.imageUrl && this.cloudinary.constructor.isValidCloudinaryUrl(report.imageUrl)) {
+                try {
+                    const publicId = this.cloudinary.constructor.extractPublicId(report.imageUrl);
+                    if (publicId) {
+                        cloudinaryAnalysis = await this.cloudinary.analyzeImage(publicId);
+                    }
+                } catch (cloudinaryError) {
+                    console.warn('Cloudinary analysis failed, proceeding without it:', cloudinaryError.message);
+                }
             }
 
-            // Perform AI validation
-            const validationResult = await this.aiValidator.validateReport(report, attemptNumber);
+            // Perform AI validation to get quality score
+            const validationResult = await this.aiValidator.validateReport(report, cloudinaryAnalysis);
 
-            // Add validation attempt to history
-            await this.database.addValidationAttempt(report.id, {
-                ...validationResult,
-                attemptNumber,
-                reportData: report
+            // Store report with validation score and Cloudinary analysis for admin review
+            await this.database.saveReport(report.id, {
+                ...report,
+                status: 'pending_admin_review',
+                qualityScore: validationResult.score,
+                validationResult,
+                validatedAt: new Date(),
+                // Store breakdown for admin analysis
+                scoreBreakdown: validationResult.breakdown,
+                aiConfidence: validationResult.confidence,
+                aiReason: validationResult.reason,
+                aiRecommendations: validationResult.recommendations,
+                // Store Cloudinary analysis if available
+                cloudinaryAnalysis: cloudinaryAnalysis ? {
+                    quality: cloudinaryAnalysis.quality,
+                    contentType: cloudinaryAnalysis.contentType,
+                    tags: cloudinaryAnalysis.tags,
+                    faces: cloudinaryAnalysis.faces?.length || 0,
+                    metadata: cloudinaryAnalysis.metadata
+                } : null
             });
 
-            // Determine action based on score
-            if (validationResult.score >= this.passThreshold) {
-                return await this.handleAcceptance(report, validationResult, attemptNumber);
-            } else {
-                return await this.handleRejection(report, validationResult, attemptNumber);
-            }
+            return {
+                success: true,
+                action: 'submitted_for_review',
+                score: validationResult.score,
+                breakdown: validationResult.breakdown,
+                message: 'Report submitted successfully and is pending admin review',
+                reason: validationResult.reason,
+                recommendations: validationResult.recommendations,
+                confidence: validationResult.confidence,
+                cloudinaryAnalysis: cloudinaryAnalysis ? {
+                    quality: cloudinaryAnalysis.quality,
+                    contentType: cloudinaryAnalysis.contentType,
+                    tags: cloudinaryAnalysis.tags.slice(0, 5) // Limit tags for response
+                } : null
+            };
 
         } catch (error) {
             console.error('Report validation error:', error);
@@ -105,99 +129,22 @@ export class ReportValidator {
         if (reportTime > now + (24 * 60 * 60 * 1000)) { // Allow 1 day in future for timezone issues
             throw new Error('Report timestamp cannot be too far in the future');
         }
-    }
 
-    /**
-     * Handles report acceptance
-     */
-    async handleAcceptance(report, validationResult, attemptNumber) {
-        try {
-            // Save accepted report
-            await this.database.saveReport(report.id, {
-                ...report,
-                status: 'accepted',
-                attempts: attemptNumber,
-                finalScore: validationResult.score,
-                acceptedAt: new Date(),
-                validationResult
-            });
-
-            return {
-                success: true,
-                action: 'accepted',
-                score: validationResult.score,
-                attempts: attemptNumber,
-                message: 'Report accepted successfully',
-                reason: validationResult.reason
-            };
-        } catch (error) {
-            console.error('Error handling acceptance:', error);
-            throw new Error(`Failed to accept report: ${error.message}`);
+        // Validate image URL (should be from Cloudinary)
+        if (!report.imageUrl || typeof report.imageUrl !== 'string') {
+            throw new Error('Report must include an image URL');
         }
-    }
 
-    /**
-     * Handles report rejection
-     */
-    async handleRejection(report, validationResult, attemptNumber) {
-        try {
-            const isFinalAttempt = attemptNumber >= this.maxAttempts;
-
-            // Save rejected report
-            await this.database.saveReport(report.id, {
-                ...report,
-                status: isFinalAttempt ? 'forwarded_to_admin' : 'rejected',
-                attempts: attemptNumber,
-                lastScore: validationResult.score,
-                lastRejectionReason: validationResult.reason,
-                rejectedAt: new Date(),
-                canRetry: !isFinalAttempt,
-                validationResult
-            });
-
-            // If this is the final attempt, forward to admin
-            if (isFinalAttempt) {
-                await this.database.forwardToAdminReview(report.id);
-            }
-
-            return {
-                success: false,
-                action: isFinalAttempt ? 'forwarded_to_admin' : 'rejected',
-                score: validationResult.score,
-                attempts: attemptNumber,
-                maxAttempts: this.maxAttempts,
-                message: isFinalAttempt
-                    ? 'Report forwarded to admin for manual review after maximum attempts reached'
-                    : `Report rejected. ${this.maxAttempts - attemptNumber} attempts remaining.`,
-                reason: validationResult.reason,
-                suggestions: validationResult.suggestions || [],
-                canRetry: !isFinalAttempt
-            };
-        } catch (error) {
-            console.error('Error handling rejection:', error);
-            throw new Error(`Failed to reject report: ${error.message}`);
+        // Basic Cloudinary URL validation
+        if (!report.imageUrl.includes('cloudinary.com') && !report.imageUrl.includes('res.cloudinary.com')) {
+            throw new Error('Image must be hosted on Cloudinary');
         }
-    }
 
-    /**
-     * Handles when maximum attempts are exceeded
-     */
-    async handleMaxAttemptsExceeded(report) {
+        // Basic URL format validation
         try {
-            // Forward to admin review
-            await this.database.forwardToAdminReview(report.id);
-
-            return {
-                success: false,
-                action: 'forwarded_to_admin',
-                attempts: this.maxAttempts,
-                maxAttempts: this.maxAttempts,
-                message: 'Maximum validation attempts exceeded. Report forwarded to admin for manual review.',
-                canRetry: false
-            };
-        } catch (error) {
-            console.error('Error forwarding to admin:', error);
-            throw new Error(`Failed to forward report: ${error.message}`);
+            new URL(report.imageUrl);
+        } catch {
+            throw new Error('Image URL must be a valid URL');
         }
     }
 
@@ -223,26 +170,30 @@ export class ReportValidator {
         return await this.database.getValidationStats();
     }
 
-    /**
-     * Gets report validation history
-     */
-    async getReportHistory(reportId) {
-        return await this.database.getValidationHistory(reportId);
-    }
 
     /**
      * Health check for the validation service
      */
     async healthCheck() {
         try {
-            const aiHealth = await this.aiValidator.healthCheck();
+            const [aiHealth, cloudinaryHealth] = await Promise.all([
+                this.aiValidator.healthCheck(),
+                this.cloudinary.healthCheck().catch(() => ({ status: 'unhealthy', error: 'Cloudinary not configured' }))
+            ]);
             const dbStats = await this.database.getValidationStats();
 
+            const overallStatus = (aiHealth.status === 'healthy' && cloudinaryHealth.status === 'healthy')
+                ? 'healthy'
+                : aiHealth.status === 'healthy'
+                    ? 'degraded'
+                    : 'unhealthy';
+
             return {
-                status: aiHealth.status === 'healthy' ? 'healthy' : 'degraded',
+                status: overallStatus,
                 timestamp: new Date().toISOString(),
                 services: {
                     ai: aiHealth,
+                    cloudinary: cloudinaryHealth,
                     database: {
                         status: 'healthy',
                         stats: dbStats
@@ -262,17 +213,14 @@ export class ReportValidator {
      * Configures the validator settings
      */
     configure(options = {}) {
-        if (options.maxAttempts && options.maxAttempts > 0) {
-            this.maxAttempts = options.maxAttempts;
-        }
-        if (options.passThreshold && options.passThreshold >= 0 && options.passThreshold <= 100) {
-            this.passThreshold = options.passThreshold;
-        }
         if (options.aiValidator) {
             this.aiValidator = options.aiValidator;
         }
         if (options.database) {
             this.database = options.database;
+        }
+        if (options.cloudinary) {
+            this.cloudinary = options.cloudinary;
         }
     }
 }
