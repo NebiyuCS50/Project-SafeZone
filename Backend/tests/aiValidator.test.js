@@ -1,4 +1,4 @@
-const { AIValidator } = require('../services/openai');
+import { AIValidator } from '../services/openai.js';
 
 // Mock OpenAI client
 jest.mock('openai', () => {
@@ -10,7 +10,6 @@ jest.mock('openai', () => {
         }
     }));
 });
-
 const OpenAI = require('openai');
 
 describe('AIValidator', () => {

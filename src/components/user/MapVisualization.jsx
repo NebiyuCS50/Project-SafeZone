@@ -4,20 +4,10 @@ import { useEffect, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.heat";
+import { db } from "@/firebase/firebase";
+import { collection, onSnapshot } from "firebase/firestore";
 
 const ADDIS_ABABA_CENTER = [9.03, 38.74];
-
-/* TEMP safety datas */
-const dangerZones = [
-  [9.041, 38.761, 0.9],
-  [9.012, 38.732, 0.85],
-  [9.055, 38.721, 0.8],
-];
-
-const safeZones = [
-  [9.031, 38.751, 0.4],
-  [9.021, 38.741, 0.3],
-];
 
 /*Heat layer*/
 function HeatLayer({ points, options }) {
@@ -146,7 +136,6 @@ function RouteLayer({ routes, selectedRoute }) {
   return null;
 }
 
-
 /*Main component*/
 export function MapVisualization() {
   const [from, setFrom]= useState("");
@@ -154,6 +143,47 @@ export function MapVisualization() {
   const [routes, setRoutes]= useState([]);
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [loading, setLoading]= useState(false);
+
+  // Safety zones state
+  const [dangerZones, setDangerZones] = useState([]);
+  const [safeZones, setSafeZones] = useState([]);
+  const [cautionZones, setCautionZones] = useState([]);
+
+  // Fetch zones from Firestore
+  useEffect(() => {
+    const zonesCollection = collection(db, "zones");
+    const unsubscribe = onSnapshot(zonesCollection, (snapshot) => {
+      const danger = [];
+      const safe = [];
+      const caution = [];
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        // Support both {lat, lng} and {latitude, longitude}
+        const lat = data.lat !== undefined ? data.lat : data.latitude;
+        const lng = data.lng !== undefined ? data.lng : data.longitude;
+        
+        if (lat === undefined || lng === undefined) return;
+
+        const point = [lat, lng, data.intensity || 0.5];
+        
+        const type = (data.type || "").toLowerCase();
+        if (type === "danger" || type === "red") {
+          danger.push(point);
+        } else if (type === "safe" || type === "green") {
+          safe.push(point);
+        } else if (type === "caution" || type === "yellow") {
+          caution.push(point);
+        }
+      });
+
+      setDangerZones(danger);
+      setSafeZones(safe);
+      setCautionZones(caution);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   /*GEOcoding (place lat/lang)   */
   async function geocode(place) {
@@ -170,17 +200,31 @@ export function MapVisualization() {
     let dangerHits = 0;
 
     routeCoords.forEach(([lat, lng]) => {
+      // Impact of Danger Zones
       dangerZones.forEach(([dLat, dLng, intensity]) => {
         const distance = Math.sqrt(
           Math.pow(lat - dLat, 2) + Math.pow(lng - dLng, 2)
         ); 
+        if (distance < 0.01) dangerHits += intensity;
+      });
 
-        if (distance < 0.01){
-          dangerHits += intensity;
-        }
+      // Impact of Caution Zones
+      cautionZones.forEach(([cLat, cLng, intensity]) => {
+        const distance = Math.sqrt(
+          Math.pow(lat - cLat, 2) + Math.pow(lng - cLng, 2)
+        ); 
+        if (distance < 0.01) dangerHits += intensity * 0.5;
+      });
+
+      // Potential reduction for Safe Zones
+      safeZones.forEach(([sLat, sLng, intensity]) => {
+        const distance = Math.sqrt(
+          Math.pow(lat - sLat, 2) + Math.pow(lng - sLng, 2)
+        ); 
+        if (distance < 0.01) dangerHits -= intensity * 0.2;
+      });
     });
-   });
-   return dangerHits;
+    return Math.max(0, dangerHits);
   }
   
   /* Routing */
@@ -286,9 +330,9 @@ export function MapVisualization() {
   }
   
   return (
-    <div className="h-screen w-full flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="h-screen w-full flex flex-col bg-linear-to-br from-slate-50 via-white to-slate-100">
       {/*Ctrl panel*/}
-      <div className="z-10 px-4 pt-6 pb-3 flex justify-center">
+      <div className="z-30 px-4 pt-6 pb-3 flex justify-center">
         <div className="w-full max-w-5xl bg-white/90 backdrop-blur-md border border-slate-200 shadow-xl rounded-2xl px-5 py-4">
           <div className="flex items-start justify-between gap-3 flex-wrap md:flex-nowrap">
             <div>
@@ -332,7 +376,7 @@ export function MapVisualization() {
 
       {/* Route list */}
       {routes.length > 0 && (
-        <div className="px-4 pb-3 flex justify-center">
+        <div className="px-3 pb-3 flex justify-center">
           <div className="w-full max-w-5xl">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold text-slate-800">
@@ -407,6 +451,18 @@ export function MapVisualization() {
                 radius: 30,
                 blur: 20,
                 maxZoom: 17,
+                gradient: { 0.4: "blue", 0.6: "orange", 1: "red" },
+              }}
+            />
+
+            {/* 🟡 Caution Zones */}
+            <HeatLayer
+              points={cautionZones}
+              options={{
+                radius: 25,
+                blur: 20,
+                maxZoom: 17,
+                gradient: { 0.4: "yellow", 0.8: "orange", 1: "gold" },
               }}
             />
 
@@ -417,6 +473,7 @@ export function MapVisualization() {
                 radius: 20,
                 blur: 25,
                 maxZoom: 17,
+                gradient: { 0.4: "lime", 1: "green" },
               }}
             />
 

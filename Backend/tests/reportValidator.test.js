@@ -1,6 +1,6 @@
-const { ReportValidator } = require('../services/reportValidator');
-const { AIValidator } = require('../services/openai');
-const { ReportDatabase } = require('../services/firestore');
+import { ReportValidator } from '../services/reportValidator.js';
+import { AIValidator } from '../services/openai.js';
+import { ReportDatabase } from '../services/firestore.js';
 
 // Mock dependencies
 jest.mock('../services/openai');

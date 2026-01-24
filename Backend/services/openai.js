@@ -3,7 +3,6 @@ import OPENAI from "openai";
 export const openai = new OPENAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
-
 /**
  * AI Validation Service
  * Handles all AI-powered report validation logic

@@ -22,7 +22,7 @@ import { useNavigate } from "react-router-dom";
 const navigation = [
   {
     title: "Dashboard",
-    items: [{ title: "Map Visualization", icon: Map, href: "/dashboard/map" }],
+    items: [{ title: "Map ", icon: Map, href: "/dashboard/map" }],
   },
   {
     title: "Incidents",

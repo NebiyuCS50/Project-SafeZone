@@ -1,4 +1,4 @@
-const { ReportDatabase } = require('../services/firestore');
+import { ReportDatabase } from '../services/firestore.js';
 
 // Mock Firebase Admin
 jest.mock('firebase-admin', () => ({

@@ -32,7 +32,7 @@ class EnvironmentConfig {
             console.warn('Warning: OPENAI_API_KEY does not start with "sk-". Please verify it is correct.');
         }
 
-        console.log('✅ Environment configuration validated successfully');
+        console.log(' Environment configuration validated successfully');
     }
 
     /**
