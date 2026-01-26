@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.post("/api/geminiAnalyzer", async (req, res) => {
+app.post("/api/openrouteAnalyzer", async (req, res) => {
   try {
     const { incidentType, description } = req.body;
     const { aiConfidence } = await analyzeIncidentOpenRouter({
