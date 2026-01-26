@@ -53,7 +53,7 @@ const INCIDENT_TYPES = {
   fire: { label: "Fire/Hazard", color: "destructive" },
   medical: { label: "Medical Emergency", color: "destructive" },
   disaster: { label: "Natural Disaster", color: "destructive" },
-  other: { label: "Other", color: "secondary" },
+  other: { label: "Other", color: "destructive" },
 };
 const STATUSES = {
   pending: {
