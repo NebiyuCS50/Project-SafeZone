@@ -29,6 +29,7 @@ import {
 import { Search, Filter, Calendar, MapPin, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { fetchAllReports } from "@/utils/user";
+import { reverseGeocode } from "@/utils/reverseGeolocation";
 
 const INCIDENT_TYPES = {
   accident: { label: "Accident", color: "destructive" },
@@ -37,7 +38,7 @@ const INCIDENT_TYPES = {
   fire: { label: "Fire/Hazard", color: "destructive" },
   medical: { label: "Medical Emergency", color: "destructive" },
   disaster: { label: "Natural Disaster", color: "destructive" },
-  other: { label: "Other", color: "secondary" },
+  other: { label: "Other", color: "destructive" },
 };
 const STATUSES = {
   pending: {
@@ -74,6 +75,7 @@ export default function LiveIncident() {
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [placeNames, setPlaceNames] = useState({});
 
   const itemsPerPage = 5;
 
@@ -86,6 +88,13 @@ export default function LiveIncident() {
       })
       .catch(() => setLoading(false));
   }, []);
+
+  async function getPlaceName(lat, lng, locKey) {
+    if (placeNames[locKey]) return placeNames[locKey];
+    const name = await reverseGeocode(lat, lng);
+    setPlaceNames((prev) => ({ ...prev, [locKey]: name }));
+    return name;
+  }
 
   // Group and filter reports
   const locationGroups = groupReportsByLocationAndType(allReports);
@@ -108,13 +117,13 @@ export default function LiveIncident() {
         status: first.status,
         timestamp: first.timestamp,
       };
-    }
+    },
   );
 
   // Apply search and filters
   if (searchTerm) {
     groupedRows = groupedRows.filter((row) =>
-      row.incidentType.toLowerCase().includes(searchTerm.toLowerCase())
+      row.incidentType.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }
   if (filterType !== "all") {
@@ -130,6 +139,16 @@ export default function LiveIncident() {
   const startIdx = (safePage - 1) * itemsPerPage;
   const endIdx = startIdx + itemsPerPage;
   const paginatedRows = groupedRows.slice(startIdx, endIdx);
+
+  useEffect(() => {
+    paginatedRows.forEach((row) => {
+      if (!placeNames[row.locKey]) {
+        const [lat, lng] = row.locKey.split(",").map(Number);
+        getPlaceName(lat, lng, row.locKey);
+      }
+    });
+    // eslint-disable-next-line
+  }, [paginatedRows]);
 
   const getPaginationItems = () => {
     const items = [];
@@ -276,7 +295,7 @@ export default function LiveIncident() {
                       className="hover:bg-muted/50"
                     >
                       <TableCell className="font-mono text-xs">
-                        {row.locKey}
+                        {placeNames[row.locKey] || row.locKey}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -294,7 +313,7 @@ export default function LiveIncident() {
                           <Calendar className="h-3 w-3" />
                           {format(
                             new Date(row.timestamp),
-                            "MMM dd, yyyy HH:mm"
+                            "MMM dd, yyyy HH:mm",
                           )}
                         </div>
                       </TableCell>
@@ -314,10 +333,10 @@ export default function LiveIncident() {
                             row.alertLevel === "high"
                               ? "bg-red-100 text-red-800 border-red-200"
                               : row.alertLevel === "medium"
-                              ? "bg-yellow-100 text-yellow-800 border-yellow-200"
-                              : row.alertLevel === "low"
-                              ? "bg-green-100 text-green-800 border-green-200"
-                              : "outline"
+                                ? "bg-yellow-100 text-yellow-800 border-yellow-200"
+                                : row.alertLevel === "low"
+                                  ? "bg-green-100 text-green-800 border-green-200"
+                                  : "outline"
                           }
                         >
                           {row.alertLevel !== "none"
