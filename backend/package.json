@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon api/geminiAnalyzer.js"
+    "dev": "nodemon api/openrouteAnalyzer.js"
   },
   "dependencies": {
     "@google/genai": "^1.38.0",
