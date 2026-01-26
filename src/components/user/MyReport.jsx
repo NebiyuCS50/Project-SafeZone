@@ -77,10 +77,10 @@ function groupByTypeAndLocation(reports) {
       typeof r.latitude === "number" && typeof r.longitude === "number"
         ? `${r.latitude.toFixed(4)},${r.longitude.toFixed(4)}`
         : r.location &&
-          typeof r.location.lat === "number" &&
-          typeof r.location.lng === "number"
-        ? `${r.location.lat.toFixed(4)},${r.location.lng.toFixed(4)}`
-        : "N/A";
+            typeof r.location.lat === "number" &&
+            typeof r.location.lng === "number"
+          ? `${r.location.lat.toFixed(4)},${r.location.lng.toFixed(4)}`
+          : "N/A";
     const key = `${r.incidentType}|${loc}`;
     if (!groups[key]) {
       groups[key] = { ...r, count: 1, locKey: loc };
@@ -132,7 +132,7 @@ export default function IncidentReportsTable() {
 
     if (searchTerm) {
       filtered = filtered.filter((r) =>
-        r.incidentType.toLowerCase().includes(searchTerm.toLowerCase())
+        r.incidentType.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
     if (filterType !== "all") {
@@ -150,7 +150,7 @@ export default function IncidentReportsTable() {
 
     const safePage = Math.min(
       currentPage,
-      Math.max(1, Math.ceil(grouped.length / itemsPerPage))
+      Math.max(1, Math.ceil(grouped.length / itemsPerPage)),
     );
     setCurrentPage(safePage);
 
@@ -350,15 +350,15 @@ export default function IncidentReportsTable() {
                           {typeof report.latitude === "number" &&
                           typeof report.longitude === "number"
                             ? `${report.latitude.toFixed(
-                                4
+                                4,
                               )}, ${report.longitude.toFixed(4)}`
                             : report.location &&
-                              typeof report.location.lat === "number" &&
-                              typeof report.location.lng === "number"
-                            ? `${report.location.lat.toFixed(
-                                4
-                              )}, ${report.location.lng.toFixed(4)}`
-                            : "N/A"}
+                                typeof report.location.lat === "number" &&
+                                typeof report.location.lng === "number"
+                              ? `${report.location.lat.toFixed(
+                                  4,
+                                )}, ${report.location.lng.toFixed(4)}`
+                              : "N/A"}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -366,7 +366,7 @@ export default function IncidentReportsTable() {
                           <Calendar className="h-3 w-3" />
                           {format(
                             new Date(report.timestamp),
-                            "MMM dd, yyyy HH:mm"
+                            "MMM dd, yyyy HH:mm",
                           )}
                         </div>
                       </TableCell>
