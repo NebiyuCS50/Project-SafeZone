@@ -1,5 +1,5 @@
 import React from "react";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, useMap, Marker, Polyline } from "react-leaflet";
 import { useEffect, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -164,6 +164,18 @@ function RouteLayer({ routes, selectedRoute }) {
   return null;
 }
 
+/* Danger check */
+function isRouteDangerous(routeCoords, dangerZones) {
+  return routeCoords.some(([lat, lng]) => {
+    return dangerZones.some(([dLat, dLng, intensity]) => {
+      const distance = Math.sqrt(
+        Math.pow(lat - dLat, 2) + Math.pow(lng - dLng, 2)
+      );
+      return distance < 0.01;
+    });
+  });
+}
+
 /*Main component*/
 export function MapVisualization() {
   const [from, setFrom]= useState("");
@@ -256,7 +268,6 @@ export function MapVisualization() {
       const end = await geocode(to +", Addis Ababa");
 
       // Ask OSRM for multiple alternatives (up to 3, which is the limit on some servers).
-      // The public demo endpoint can rate-limit, so we try a fallback OSRM instance if needed.
       const query = `route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?alternatives=3&overview=full&geometries=geojson&steps=false`;
       const routingServers = [
         "https://router.project-osrm.org",
@@ -330,16 +341,22 @@ export function MapVisualization() {
         return acc;
       }, []);
 
-      processedRoutes.sort((a,b)=> a.safetyScore - b.safetyScore);
+      // Check if the safest route is dangerous
+      if (processedRoutes.length && isRouteDangerous(processedRoutes[0].coords, dangerZones)) {
+        alert("⚠️ The route found goes through a danger zone. Please try different locations.");
+        setRoutes([]);
+        setSelectedRoute(null);
+        return;
+      }
 
       setRoutes(processedRoutes);
       setSelectedRoute(processedRoutes[0] || null);
-  } catch (error) {
-    alert("Error finding route: " + error.message);
-    console.error(error);
+    } catch (error) {
+      alert("Error finding route: " + error.message);
+      console.error(error);
     } finally {
       setLoading(false);
-      }
+    }
   }
   
   return (
