@@ -48,6 +48,7 @@ import { doc, getDoc } from "firebase/firestore";
 
 export default function Home() {
   useEffect(() => {
+    // Listen fot authentication state changes
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setIsSignedIn(true);
@@ -56,8 +57,11 @@ export default function Home() {
       }
     });
 
+    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
+
+
   const navigate = useNavigate();
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -222,7 +226,10 @@ export default function Home() {
                     if (user) {
                       const userDocRef = doc(db, "users", user.uid);
                       const userDocSnap = await getDoc(userDocRef);
+
                       const role = userDocSnap.data()?.role;
+
+                      // Redirect user based on role
                       if (role === "admin") {
                         navigate("/admin/dashboard");
                       } else {

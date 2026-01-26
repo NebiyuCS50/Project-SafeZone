@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Upload, MapPin, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { sanitizeInput } from "@/utils/sanitize";
 
 const incidentCategories = [
   { value: "accident", label: "Accident", icon: "🚗" },
@@ -114,9 +115,10 @@ export function ReportIncident({ setIsCameraActive }) {
         imageUrl = await uploadToImageKit(data.image);
         console.log("Image uploaded:", imageUrl);
       }
+      // Sanitize user inputs before submission
       await IncidentReporting({
-        incidentType: data.incidentType,
-        description: data.description,
+        incidentType: sanitizeInput(data.incidentType),
+        description: sanitizeInput(data.description),
         location: {
           lat: data.location.lat,
           lng: data.location.lng,

@@ -4,25 +4,53 @@ import { useEffect, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.heat";
-import { db } from "@/firebase/firebase";
-import { collection, onSnapshot } from "firebase/firestore";
+
 
 const ADDIS_ABABA_CENTER = [9.03, 38.74];
 
-/*Heat layer*/
-function HeatLayer({ points, options }) {
+// Bounding box for Addis Ababa to restrict Nominatim searches.
+const ADDIS_ABABA_BBOX = {
+  minLon: 38.66,
+  minLat: 8.80,
+  maxLon: 38.90,
+  maxLat: 9.10,
+};
+
+//animated blinking marker
+function BlinkingMarker({ position, color }) {
   const map = useMap();
 
   useEffect(() => {
-    if (!map || !points.length) return;
+    if (!map) return;
 
-    const layer = L.heatLayer(points, options);
-    layer.addTo(map);
+    const icon = L.divIcon({
+      className: "",
+      html: `
+        <div style="
+          width: 14px;
+          height: 14px;
+          background-color: #ef4444;
+          border-radius: 50%;
+          box-shadow:0 0 12px #ef4444;
+          animation: pulse 1.2s infinite;
+        "></div>
 
-    return () => {
-      map.removeLayer(layer);
-    };
-  }, [map, points, options]);
+        <style>
+          @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.6; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0.6; }
+          }
+        </style>
+      `,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
+    });
+
+    const marker = L.marker(position, { icon }).addTo(map);
+
+    return () => map.removeLayer(marker);
+  }, [map, position, color]);
 
   return null;
 }
@@ -149,50 +177,35 @@ export function MapVisualization() {
   const [safeZones, setSafeZones] = useState([]);
   const [cautionZones, setCautionZones] = useState([]);
 
-  // Fetch zones from Firestore
+  //mock zones
+  const MOCK_ZONES = {
+    danger: [
+    [8.9838, 38.7963, 1], // Bole Airport
+    [9.0205, 38.8024, 1], // Megenagna
+  ],
+  safe: [
+    [9.0567, 38.7389, 0.8], // Friendship Park
+  ],
+};
+  
+
   useEffect(() => {
-    const zonesCollection = collection(db, "zones");
-    const unsubscribe = onSnapshot(zonesCollection, (snapshot) => {
-      const danger = [];
-      const safe = [];
-      const caution = [];
-
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        // Support both {lat, lng} and {latitude, longitude}
-        const lat = data.lat !== undefined ? data.lat : data.latitude;
-        const lng = data.lng !== undefined ? data.lng : data.longitude;
-        
-        if (lat === undefined || lng === undefined) return;
-
-        const point = [lat, lng, data.intensity || 0.5];
-        
-        const type = (data.type || "").toLowerCase();
-        if (type === "danger" || type === "red") {
-          danger.push(point);
-        } else if (type === "safe" || type === "green") {
-          safe.push(point);
-        } else if (type === "caution" || type === "yellow") {
-          caution.push(point);
-        }
-      });
-
-      setDangerZones(danger);
-      setSafeZones(safe);
-      setCautionZones(caution);
-    });
-
-    return () => unsubscribe();
+    setDangerZones((prev) => [...prev, ...MOCK_ZONES.danger]);
+    setSafeZones((prev) => [...prev, ...MOCK_ZONES.safe]);
   }, []);
 
   /*GEOcoding (place lat/lang)   */
   async function geocode(place) {
     const encodedPlace = encodeURIComponent(place);
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodedPlace}`
-    );
+
+    // Build a Nominatim query restricted to the Addis Ababa bounding box.
+    // Use `bounded=1` so results are limited to the viewbox, and `limit=1` to get the best match.
+    const viewbox = `${ADDIS_ABABA_BBOX.minLon},${ADDIS_ABABA_BBOX.maxLat},${ADDIS_ABABA_BBOX.maxLon},${ADDIS_ABABA_BBOX.minLat}`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&bounded=1&viewbox=${viewbox}&q=${encodedPlace}`;
+
+    const res = await fetch(url);
     const data = await res.json();
-    if (!data.length) throw new Error("Location not found");
+    if (!data.length) throw new Error("Location not found within Addis Ababa");
     return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
   }
 
@@ -200,7 +213,7 @@ export function MapVisualization() {
     let dangerHits = 0;
 
     routeCoords.forEach(([lat, lng]) => {
-      // Impact of Danger Zones
+      // Increase risk when passing through danger zones
       dangerZones.forEach(([dLat, dLng, intensity]) => {
         const distance = Math.sqrt(
           Math.pow(lat - dLat, 2) + Math.pow(lng - dLng, 2)
@@ -208,7 +221,7 @@ export function MapVisualization() {
         if (distance < 0.01) dangerHits += intensity;
       });
 
-      // Impact of Caution Zones
+      // Moderate risk for caution zones
       cautionZones.forEach(([cLat, cLng, intensity]) => {
         const distance = Math.sqrt(
           Math.pow(lat - cLat, 2) + Math.pow(lng - cLng, 2)
@@ -216,7 +229,7 @@ export function MapVisualization() {
         if (distance < 0.01) dangerHits += intensity * 0.5;
       });
 
-      // Potential reduction for Safe Zones
+      // Reduce risk when passing safe zones
       safeZones.forEach(([sLat, sLng, intensity]) => {
         const distance = Math.sqrt(
           Math.pow(lat - sLat, 2) + Math.pow(lng - sLng, 2)
@@ -431,55 +444,37 @@ export function MapVisualization() {
       )}
 
       {/* Map */}
-      <div className="flex-1 px-4 pb-4">
-        <div className="h-full w-full rounded-2xl overflow-hidden border border-slate-200 shadow-md">
+      <div className="px-4 pb-4 flex justify-center">
+        <div className="w-[85%] h-130">
+          <div className="h-full w-full rounded-2xl overflow-hidden border border-slate-200 shadow-md relative z-0">
           <MapContainer
             center={ADDIS_ABABA_CENTER}
             zoom={13}
             scrollWheelZoom
             className="h-full w-full"
+        
           >
             <TileLayer
               attribution="© OpenStreetMap contributors"
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
 
-            {/* 🔴 Danger Zones */}
-            <HeatLayer
-              points={dangerZones}
-              options={{
-                radius: 30,
-                blur: 20,
-                maxZoom: 17,
-                gradient: { 0.4: "blue", 0.6: "orange", 1: "red" },
-              }}
-            />
+            {/* Blinking mock markers */}
+             {dangerZones.map(([lat, lng], i) => (
+              <BlinkingMarker key={`danger-${i}`} position={[lat, lng]} color="red" />
+              ))}
 
-            {/* 🟡 Caution Zones */}
-            <HeatLayer
-              points={cautionZones}
-              options={{
-                radius: 25,
-                blur: 20,
-                maxZoom: 17,
-                gradient: { 0.4: "yellow", 0.8: "orange", 1: "gold" },
-              }}
-            />
-
-            {/* 🟢 Safe Zones */}
-            <HeatLayer
-              points={safeZones}
-              options={{
-                radius: 20,
-                blur: 25,
-                maxZoom: 17,
-                gradient: { 0.4: "lime", 1: "green" },
-              }}
-            />
+              {safeZones.map(([lat, lng], i) => {
+                console.log("safe", lat, lng);
+                return (
+                  <BlinkingMarker key={`safe-${i}`} position={[lat, lng]} color="green" />
+                );
+              })}
 
             {/* Route Lines */}
             <RouteLayer routes={routes} selectedRoute={selectedRoute} />
           </MapContainer>
+        </div>
         </div>
       </div>
     </div>
