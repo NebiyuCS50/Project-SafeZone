@@ -75,7 +75,7 @@ export default function Dashboard() {
     switch (activeTab) {
       case "map":
         return (
-          <div className="space-y-6">
+          <div className="h-full -m-4 md:-m-6">
             <MapVisualization />
           </div>
         );
@@ -235,26 +235,28 @@ export default function Dashboard() {
         />
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6 lg:ml-0 overflow-y-auto">
-          {/* Mobile Breadcrumb */}
-          <nav className="md:hidden flex items-center space-x-2 text-sm mb-6">
-            {getBreadcrumb().map((item, index) => (
-              <div key={index} className="flex items-center">
-                {index > 0 && (
-                  <ChevronRight className="w-4 h-4 mx-2 text-gray-400" />
-                )}
-                <span
-                  className={
-                    index === getBreadcrumb().length - 1
-                      ? "text-gray-900 font-medium"
-                      : "text-gray-500"
-                  }
-                >
-                  {item}
-                </span>
-              </div>
-            ))}
-          </nav>
+        <main className={`flex-1 lg:ml-0 ${activeTab === 'map' ? 'p-0 overflow-hidden' : 'p-4 md:p-6 overflow-y-auto'}`}>
+          {/*  Breadcrumb */}
+          {activeTab !== 'map' && (
+            <nav className="md:hidden flex items-center space-x-2 text-sm mb-6 px-4 pt-4">
+              {getBreadcrumb().map((item, index) => (
+                <div key={index} className="flex items-center">
+                  {index > 0 && (
+                    <ChevronRight className="w-4 h-4 mx-2 text-gray-400" />
+                  )}
+                  <span
+                    className={
+                      index === getBreadcrumb().length - 1
+                        ? "text-gray-900 font-medium"
+                        : "text-gray-500"
+                    }
+                  >
+                    {item}
+                  </span>
+                </div>
+              ))}
+            </nav>
+          )}
           {renderContent()}
         </main>
       </div>

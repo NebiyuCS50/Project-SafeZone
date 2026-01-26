@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Upload, MapPin, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { sanitizeInput } from "@/utils/sanitize";
 
 const incidentCategories = [
   { value: "accident", label: "Accident", icon: "🚗" },
@@ -114,22 +115,10 @@ export function ReportIncident({ setIsCameraActive }) {
         imageUrl = await uploadToImageKit(data.image);
         console.log("Image uploaded:", imageUrl);
       }
-      const aiResponse = await fetch(
-        "http://localhost:3000/api/geminiAnalyzer",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            incidentType: data.incidentType,
-            description: data.description,
-          }),
-        },
-      );
-      const aiResult = await aiResponse.json();
-      console.log("AI Confidence to store:", aiResult.aiConfidence);
+
       await IncidentReporting({
-        incidentType: data.incidentType,
-        description: data.description,
+        incidentType: sanitizeInput(data.incidentType),
+        description: sanitizeInput(data.description),
         location: {
           lat: data.location.lat,
           lng: data.location.lng,

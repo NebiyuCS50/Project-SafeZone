@@ -88,7 +88,7 @@ export default function Sidebar({
       <aside
         className={`${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } fixed lg:relative lg:translate-x-0 z-30 w-64 h-auto bg-white shadow-lg transition-transform duration-200 ease-in-out`}
+        } fixed lg:relative lg:translate-x-0 z-40 w-64 h-auto bg-white shadow-lg transition-transform duration-200 ease-in-out`}
         style={moveDown ? { height: "auto", minHeight: "90vh" } : {}}
       >
         <div className="flex h-full flex-col">

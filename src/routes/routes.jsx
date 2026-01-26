@@ -65,7 +65,13 @@ const routes = [
   },
   {
     path: "/map",
-    element: <MapVisualization />,
+    element: (
+      <AuthListener>
+        <RequireAuth>
+          <MapVisualization />
+        </RequireAuth>
+      </AuthListener>
+    ),
   },
 ];
 
