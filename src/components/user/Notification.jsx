@@ -5,6 +5,7 @@ import { Calendar, MapPin, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { getDistanceFromLatLonInKm } from "@/utils/geo";
 import { useUserLocation } from "@/store/useUserLocation";
+import { reverseGeocode } from "@/utils/reverseGeolocation";
 
 const INCIDENT_TYPES = {
   accident: { label: "Accident", color: "destructive" },
@@ -30,6 +31,7 @@ function groupReportsByLocationAndType(reports) {
 export function Notification({ radiusKm = 5, onCountChange }) {
   const [grouped, setGrouped] = useState([]);
   const userLocation = useUserLocation();
+  const [placeNames, setPlaceNames] = useState({});
 
   useEffect(() => {
     if (!userLocation) return;
@@ -45,7 +47,7 @@ export function Notification({ radiusKm = 5, onCountChange }) {
             userLocation.lat,
             userLocation.lng,
             loc.lat,
-            loc.lng
+            loc.lng,
           ) <= radiusKm
         );
       });
@@ -69,7 +71,21 @@ export function Notification({ radiusKm = 5, onCountChange }) {
       if (typeof onCountChange === "function") onCountChange(slicedRows.length);
     });
   }, [userLocation, radiusKm, onCountChange]);
-
+  async function getPlaceName(lat, lng, locKey) {
+    if (placeNames[locKey]) return placeNames[locKey];
+    const name = await reverseGeocode(lat, lng);
+    setPlaceNames((prev) => ({ ...prev, [locKey]: name }));
+    return name;
+  }
+  useEffect(() => {
+    grouped.forEach((row) => {
+      if (!placeNames[row.locKey]) {
+        const [lat, lng] = row.locKey.split(",").map(Number);
+        getPlaceName(lat, lng, row.locKey);
+      }
+    });
+    // eslint-disable-next-line
+  }, [grouped]);
   return (
     <div className="p-4">
       <div className="flex items-center gap-2 mb-2">
@@ -105,10 +121,10 @@ export function Notification({ radiusKm = 5, onCountChange }) {
                     row.alertLevel === "high"
                       ? "destructive"
                       : row.alertLevel === "medium"
-                      ? "warning"
-                      : row.alertLevel === "low"
-                      ? "secondary"
-                      : "outline"
+                        ? "warning"
+                        : row.alertLevel === "low"
+                          ? "secondary"
+                          : "outline"
                   }
                 >
                   {row.alertLevel !== "none"
@@ -119,7 +135,7 @@ export function Notification({ radiusKm = 5, onCountChange }) {
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <MapPin className="h-3 w-3" />
-                {row.locKey}
+                {placeNames[row.locKey] || row.locKey}
                 <Calendar className="h-3 w-3 ml-2" />
                 {format(new Date(row.timestamp), "MMM dd, yyyy HH:mm")}
               </div>
