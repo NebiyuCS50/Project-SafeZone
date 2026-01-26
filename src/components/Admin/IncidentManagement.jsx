@@ -104,10 +104,10 @@ function groupByTypeAndLocation(reports) {
       typeof r.latitude === "number" && typeof r.longitude === "number"
         ? `${r.latitude.toFixed(4)},${r.longitude.toFixed(4)}`
         : r.location &&
-          typeof r.location.lat === "number" &&
-          typeof r.location.lng === "number"
-        ? `${r.location.lat.toFixed(4)},${r.location.lng.toFixed(4)}`
-        : "N/A";
+            typeof r.location.lat === "number" &&
+            typeof r.location.lng === "number"
+          ? `${r.location.lat.toFixed(4)},${r.location.lng.toFixed(4)}`
+          : "N/A";
     const key = `${r.incidentType || r.type}|${loc}`;
     if (!groups[key]) {
       groups[key] = { ...r, count: 1, locKey: loc };
@@ -153,14 +153,14 @@ export default function IncidentManagement() {
     // Status filter
     if (filters.status.length > 0) {
       filtered = filtered.filter((incident) =>
-        filters.status.includes(incident.status)
+        filters.status.includes(incident.status),
       );
     }
 
     // Type filter
     if (filters.type.length > 0) {
       filtered = filtered.filter((incident) =>
-        filters.type.includes(incident.incidentType)
+        filters.type.includes(incident.incidentType),
       );
     }
 
@@ -171,7 +171,7 @@ export default function IncidentManagement() {
         (incident) =>
           incident.incidentType.toLowerCase().includes(searchLower) ||
           incident.description.toLowerCase().includes(searchLower) ||
-          incident.userEmail.toLowerCase().includes(searchLower)
+          incident.userEmail.toLowerCase().includes(searchLower),
       );
     }
     filtered = groupByTypeAndLocation(filtered);
@@ -224,17 +224,17 @@ export default function IncidentManagement() {
           typeof i.latitude === "number" && typeof i.longitude === "number"
             ? `${i.latitude.toFixed(4)},${i.longitude.toFixed(4)}`
             : i.location &&
-              typeof i.location.lat === "number" &&
-              typeof i.location.lng === "number"
-            ? `${i.location.lat.toFixed(4)},${i.location.lng.toFixed(4)}`
-            : "N/A";
+                typeof i.location.lat === "number" &&
+                typeof i.location.lng === "number"
+              ? `${i.location.lat.toFixed(4)},${i.location.lng.toFixed(4)}`
+              : "N/A";
         const key = `${i.incidentType || i.type}|${loc}`;
         return key === `${groupType}|${groupLoc}`;
       });
 
       // Update Firestore for each incident
       await Promise.all(
-        toUpdate.map((i) => updateIncidentStatus(i.id, newStatus))
+        toUpdate.map((i) => updateIncidentStatus(i.id, newStatus)),
       );
 
       // Update local state
@@ -244,16 +244,16 @@ export default function IncidentManagement() {
             typeof i.latitude === "number" && typeof i.longitude === "number"
               ? `${i.latitude.toFixed(4)},${i.longitude.toFixed(4)}`
               : i.location &&
-                typeof i.location.lat === "number" &&
-                typeof i.location.lng === "number"
-              ? `${i.location.lat.toFixed(4)},${i.location.lng.toFixed(4)}`
-              : "N/A";
+                  typeof i.location.lat === "number" &&
+                  typeof i.location.lng === "number"
+                ? `${i.location.lat.toFixed(4)},${i.location.lng.toFixed(4)}`
+                : "N/A";
           const key = `${i.incidentType || i.type}|${loc}`;
           if (key === `${groupType}|${groupLoc}`) {
             return { ...i, status: newStatus };
           }
           return i;
-        })
+        }),
       );
     } catch (err) {
       setError(err.message || "Failed to update incident status.");
@@ -268,7 +268,7 @@ export default function IncidentManagement() {
     try {
       await deleteIncident(incidentId); // Delete from Firestore
       setIncidents((prev) =>
-        prev.filter((incident) => incident.id !== incidentId)
+        prev.filter((incident) => incident.id !== incidentId),
       );
       setSelectedIncident(null);
     } catch (err) {
@@ -517,15 +517,15 @@ export default function IncidentManagement() {
                               {typeof incident.latitude === "number" &&
                               typeof incident.longitude === "number"
                                 ? `${incident.latitude.toFixed(
-                                    4
+                                    4,
                                   )}, ${incident.longitude.toFixed(4)}`
                                 : incident.location &&
-                                  typeof incident.location.lat === "number" &&
-                                  typeof incident.location.lng === "number"
-                                ? `${incident.location.lat.toFixed(
-                                    4
-                                  )}, ${incident.location.lng.toFixed(4)}`
-                                : "N/A"}
+                                    typeof incident.location.lat === "number" &&
+                                    typeof incident.location.lng === "number"
+                                  ? `${incident.location.lat.toFixed(
+                                      4,
+                                    )}, ${incident.location.lng.toFixed(4)}`
+                                  : "N/A"}
                             </div>
                           </TableCell>
                           <TableCell className="text-sm">
@@ -533,7 +533,7 @@ export default function IncidentManagement() {
                               <CalendarIcon className="h-3 w-3" />
                               {format(
                                 new Date(incident.timestamp),
-                                "MMM dd, yyyy HH:mm"
+                                "MMM dd, yyyy HH:mm",
                               )}
                             </div>
                           </TableCell>
@@ -548,7 +548,7 @@ export default function IncidentManagement() {
                               <TrendingUp className="h-4 w-4" />
                               <span
                                 className={`text-sm font-medium ${getConfidenceColor(
-                                  incident.aiConfidence
+                                  incident.aiConfidence,
                                 )}`}
                               >
                                 {(incident.aiConfidence * 100).toFixed(1)}%
@@ -607,21 +607,21 @@ export default function IncidentManagement() {
                                             typeof incident.longitude ===
                                               "number"
                                               ? `${incident.latitude.toFixed(
-                                                  4
+                                                  4,
                                                 )}, ${incident.longitude.toFixed(
-                                                  4
+                                                  4,
                                                 )}`
                                               : incident.location &&
-                                                typeof incident.location.lat ===
-                                                  "number" &&
-                                                typeof incident.location.lng ===
-                                                  "number"
-                                              ? `${incident.location.lat.toFixed(
-                                                  4
-                                                )}, ${incident.location.lng.toFixed(
-                                                  4
-                                                )}`
-                                              : "N/A"}
+                                                  typeof incident.location
+                                                    .lat === "number" &&
+                                                  typeof incident.location
+                                                    .lng === "number"
+                                                ? `${incident.location.lat.toFixed(
+                                                    4,
+                                                  )}, ${incident.location.lng.toFixed(
+                                                    4,
+                                                  )}`
+                                                : "N/A"}
                                           </div>
                                         </div>
                                         <div>
@@ -632,7 +632,7 @@ export default function IncidentManagement() {
                                             <CalendarIcon className="h-3 w-3" />
                                             {format(
                                               new Date(incident.timestamp),
-                                              "MMM dd, yyyy HH:mm"
+                                              "MMM dd, yyyy HH:mm",
                                             )}
                                           </div>
                                         </div>
@@ -649,7 +649,7 @@ export default function IncidentManagement() {
                                           <span>Confidence Score: </span>
                                           <span
                                             className={`font-medium ${getConfidenceColor(
-                                              incident.aiConfidence
+                                              incident.aiConfidence,
                                             )}`}
                                           >
                                             {(
@@ -685,7 +685,7 @@ export default function IncidentManagement() {
                                             onClick={() =>
                                               handleStatusChange(
                                                 incident.id,
-                                                "resolved"
+                                                "resolved",
                                               )
                                             }
                                             className="bg-green-600 hover:bg-green-700"
@@ -697,7 +697,7 @@ export default function IncidentManagement() {
                                             onClick={() =>
                                               handleStatusChange(
                                                 incident.id,
-                                                "rejected"
+                                                "rejected",
                                               )
                                             }
                                             variant="destructive"
@@ -849,7 +849,7 @@ export default function IncidentManagement() {
                           }
 
                           return null;
-                        }
+                        },
                       )}
 
                       <PaginationItem>
