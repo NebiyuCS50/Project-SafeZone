@@ -16,6 +16,7 @@ export async function IncidentReporting({
   location,
   file,
   user,
+  aiConfidence,
 }) {
   if (!user) throw new Error("User must be logged in to report incident");
 
@@ -29,6 +30,7 @@ export async function IncidentReporting({
     userEmail: user.email,
     createdAt: serverTimestamp(),
     status: "pending",
+    aiConfidence,
   };
 
   // 3️⃣ Save to Firestore
